@@ -7,6 +7,7 @@
     <title>co.lok.kan | Find Your Perfect Workspace in Jakarta</title>
     <link rel="stylesheet" href="src/styles/global.css">
     <link rel="manifest" href="manifest.json">
+    <script src="src/app.js"></script>
     <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALYyxOdcvmRvhA1ogQ-kyN0JIa_FWHeTw&libraries=places&callback=initMap"
         async defer></script>
@@ -133,7 +134,7 @@
             <div id="contribute-view" style="display: none;">
                 <h1>Add Report</h1>
                 <div class="card">
-                    <form id="contribute-form">
+                    <form id="contribute-form" onsubmit="handleFormSubmit(event)">
                         <div style="margin-bottom: 20px;">
                             <label style="display:block; font-weight:700; margin-bottom:8px;">SELECT CAFE</label>
                             <select class="search-input" style="width:100%;" id="contribute-cafe-select">
@@ -174,7 +175,39 @@
                         </div>
 
                         <button type="submit" class="btn btn-yellow" style="width: 100%;">Submit Report</button>
+                        <p id="submit-status"
+                            style="display:none; color:var(--mother-teal); font-weight:700; margin-top:10px; text-align:center;">
+                        </p>
                     </form>
+                </div>
+            </div>
+
+            <!-- View E: Profile (Placeholder) -->
+            <div id="profile-view" style="display: none;">
+                <h1>YOUR PROFILE</h1>
+                <div class="card" style="text-align: center; padding: 40px 20px;">
+                    <div
+                        style="width: 80px; height: 80px; background: var(--mother-blue); border: 2px solid var(--charcoal); margin: 0 auto 20px; border-radius: 4px;">
+                    </div>
+                    <h2 style="margin-bottom: 5px;">Malka Dev</h2>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 20px;">Digital Nomad | Jakarta</p>
+
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 2px solid var(--charcoal); padding-top: 20px;">
+                        <div>
+                            <div style="font-size: 20px; font-weight: 700;">14</div>
+                            <div style="font-size: 10px; text-transform: uppercase;">Reports</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 20px; font-weight: 700;">250</div>
+                            <div style="font-size: 10px; text-transform: uppercase;">Points</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 style="font-size: 14px;">Recent Activity</h2>
+                    <div style="font-size: 12px;">• Reported Common Grounds (2d ago)</div>
+                    <div style="font-size: 12px; margin-top: 8px;">• Verified speed at Lucky Cat (1w ago)</div>
                 </div>
             </div>
 
@@ -185,9 +218,10 @@
             <div class="modal">
                 <h2>Filters</h2>
                 <div style="margin-bottom: 20px;">
-                    <label class="filter-option"><input type="checkbox"> Fast WiFi Only (>50 Mbps)</label>
-                    <label class="filter-option"><input type="checkbox"> Plenty of Plugs Only</label>
-                    <label class="filter-option"><input type="checkbox"> Quiet Zone</label>
+                    <label class="filter-option"><input type="checkbox" id="filter-wifi"> Fast WiFi Only (>50
+                        Mbps)</label>
+                    <label class="filter-option"><input type="checkbox" id="filter-plugs"> Plenty of Plugs Only</label>
+                    <label class="filter-option"><input type="checkbox" id="filter-noise"> Quiet Zone</label>
                 </div>
 
                 <label style="display:block; font-weight:700; margin-bottom:8px;">Region</label>
@@ -209,7 +243,7 @@
         <div class="bottom-nav">
             <div class="nav-item" onclick="showRadar()">Radar</div>
             <div class="nav-item" onclick="showContribute()">Contribute</div>
-            <div class="nav-item">Profile</div>
+            <div class="nav-item" onclick="showProfile()">Profile</div>
         </div>
     </div>
 

@@ -2,6 +2,7 @@
 
 // 1. App State
 let map, service, infoWindow;
+let markers = [];
 let Cafes = [
     {
         id: "factual_1",
@@ -149,17 +150,26 @@ let Cafes = [
     }
 ];
 let currentTab = 'map';
+let activeFilters = {
+    wifi: false,
+    plugs: false,
+    noise: false
+};
+let searchQuery = '';
 
 // 2. Google Maps Initialization
 function initMap() {
+    // If the map is already initialized, don't do it again
+    if (map) return;
+
     console.log("Initializing Google Maps...");
     const mapContainer = document.getElementById('map-tab');
     if (!mapContainer) return;
 
     // Clear the mock map UI
     mapContainer.innerHTML = '';
-    mapContainer.style.height = '400px';
-    mapContainer.className = 'card';
+    mapContainer.style.height = '500px';
+    mapContainer.className = 'tab-content';
 
     // Center of Jakarta
     const jakarta = { lat: -6.2088, lng: 106.8456 };
@@ -177,13 +187,23 @@ function initMap() {
     service = new google.maps.places.PlacesService(map);
     infoWindow = new google.maps.InfoWindow();
 
-    // Render starter cafes first
+    // Render starter data
     renderMarkers();
     renderList();
 
-    // Fetch live cafes to complement the list
+    // Fetch live data
     fetchNearbyCafes();
 }
+
+// Robust fallback for initMap if the callback fails
+function checkGoogleMaps() {
+    if (typeof google !== 'undefined' && google.maps && !map) {
+        initMap();
+    } else if (!map) {
+        setTimeout(checkGoogleMaps, 500);
+    }
+}
+window.addEventListener('load', checkGoogleMaps);
 
 // 3. Fetch Nearby Cafes
 function fetchNearbyCafes() {
@@ -228,24 +248,37 @@ function fetchNearbyCafes() {
 }
 
 function renderMarkers() {
-    Cafes.forEach(cafe => {
-        const marker = new google.maps.Marker({
-            position: { lat: cafe.lat, lng: cafe.lng },
-            map: map,
-            title: cafe.name,
-            icon: {
-                path: 'M20,60 C20,50 30,45 40,45 C45,35 60,35 70,45 C85,45 85,60 85,60 C85,75 75,85 60,85 L40,85 C25,85 20,75 20,60 Z',
-                fillColor: '#6FC2FF',
-                fillOpacity: 1,
-                strokeColor: '#383838',
-                strokeWeight: 2,
-                scale: 0.3
-            }
-        });
+    // Clear old markers first
+    markers.forEach(m => m.setMap(null));
+    markers = [];
 
-        marker.addListener('click', () => {
-            showInfoCard(cafe.id);
-        });
+    Cafes.forEach(cafe => {
+        const matchesSearch = cafe.name.toLowerCase().includes(searchQuery) || cafe.neighborhood.toLowerCase().includes(searchQuery);
+        const matchesWifi = !activeFilters.wifi || cafe.wifi >= 50;
+        const matchesPlugs = !activeFilters.plugs || (cafe.plugs && !cafe.plugs.toLowerCase().includes('scarce') && !cafe.plugs.toLowerCase().includes('no plugs'));
+        const matchesNoise = !activeFilters.noise || (cafe.noise && (cafe.noise.toLowerCase().includes('quiet') || cafe.noise.toLowerCase().includes('chill')));
+
+        if (matchesSearch && matchesWifi && matchesPlugs && matchesNoise) {
+            const marker = new google.maps.Marker({
+                position: { lat: cafe.lat, lng: cafe.lng },
+                map: map,
+                title: cafe.name,
+                icon: {
+                    path: 'M20,60 C20,50 30,45 40,45 C45,35 60,35 70,45 C85,45 85,60 85,60 C85,75 75,85 60,85 L40,85 C25,85 20,75 20,60 Z',
+                    fillColor: '#6FC2FF',
+                    fillOpacity: 1,
+                    strokeColor: '#383838',
+                    strokeWeight: 2,
+                    scale: 0.3
+                }
+            });
+
+            marker.addListener('click', () => {
+                showInfoCard(cafe.id);
+            });
+
+            markers.push(marker);
+        }
     });
 }
 
@@ -284,7 +317,14 @@ function showDetail(placeId) {
     });
 }
 
-// 5. Navigation Logic
+// 5. Navigation & Modal Logic
+function toggleModal(id, show) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = show ? 'flex' : 'none';
+    }
+}
+
 function showRadar() {
     hideAllViews();
     document.getElementById('radar-view').style.display = 'block';
@@ -293,6 +333,11 @@ function showRadar() {
 function showContribute() {
     hideAllViews();
     document.getElementById('contribute-view').style.display = 'block';
+}
+
+function showProfile() {
+    hideAllViews();
+    document.getElementById('profile-view').style.display = 'block';
 }
 
 function switchTab(tab) {
@@ -306,16 +351,29 @@ function switchTab(tab) {
 
 function renderList() {
     const container = document.getElementById('cafe-list');
-    container.innerHTML = Cafes.map(cafe => `
-        <div class="card" onclick="showDetail('${cafe.id}')" style="cursor: pointer; margin-bottom: 12px;">
+    const filteredCafes = Cafes.filter(cafe => {
+        const matchesSearch = cafe.name.toLowerCase().includes(searchQuery) || cafe.neighborhood.toLowerCase().includes(searchQuery);
+        const matchesWifi = !activeFilters.wifi || cafe.wifi >= 50;
+        const matchesPlugs = !activeFilters.plugs || (cafe.plugs && !cafe.plugs.toLowerCase().includes('scarce') && !cafe.plugs.toLowerCase().includes('no plugs'));
+        const matchesNoise = !activeFilters.noise || (cafe.noise && (cafe.noise.toLowerCase().includes('quiet') || cafe.noise.toLowerCase().includes('chill')));
+        return matchesSearch && matchesWifi && matchesPlugs && matchesNoise;
+    });
+
+    if (filteredCafes.length === 0) {
+        container.innerHTML = '<div style="padding: 40px; text-align: center; color: #666;">No spots found matching your criteria.</div>';
+        return;
+    }
+
+    container.innerHTML = filteredCafes.map(cafe => `
+        <div class="list-item" onclick="showDetail('${cafe.id}')">
             <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div>
-                    <h2 style="font-size: 16px;">${cafe.name}</h2>
-                    <p style="font-size: 11px; color: #666;">${cafe.neighborhood}</p>
+                    <h2 style="font-size: 16px; margin: 0;">${cafe.name}</h2>
+                    <p style="font-size: 11px; color: #666; margin: 4px 0 0 0;">${cafe.neighborhood}</p>
                 </div>
                 <div style="text-align: right;">
-                    <span class="badge badge-speed">${cafe.wifi} Mbps</span>
-                    <p style="font-size: 10px; font-weight:700; margin-top:5px; color: var(--mother-blue);">PLUGS OK</p>
+                    <span class="badge badge-speed" style="font-size: 12px;">${cafe.wifi} Mbps</span>
+                    <p style="font-size: 9px; font-weight:700; margin-top:4px; color: var(--mother-blue);">PLUGS OK</p>
                 </div>
             </div>
         </div>
@@ -326,6 +384,7 @@ function hideAllViews() {
     document.getElementById('radar-view').style.display = 'none';
     document.getElementById('detail-view').style.display = 'none';
     document.getElementById('contribute-view').style.display = 'none';
+    document.getElementById('profile-view').style.display = 'none';
 }
 
 // 6. OCR Simulation
@@ -340,4 +399,30 @@ function handleFileUpload(input) {
 }
 
 // 7. Initialize
-// Removed window.onload as it's handled by &callback=initMap in script tag
+// Handled by callback and checkGoogleMaps fallback
+document.querySelector('.search-input').addEventListener('input', (e) => {
+    searchQuery = e.target.value.toLowerCase();
+    renderList();
+    renderMarkers();
+});
+
+function applyFilters() {
+    activeFilters.wifi = document.getElementById('filter-wifi').checked;
+    activeFilters.plugs = document.getElementById('filter-plugs').checked;
+    activeFilters.noise = document.getElementById('filter-noise').checked;
+
+    toggleModal('filter-modal', false);
+    renderList();
+    renderMarkers();
+}
+
+function handleFormSubmit(e) {
+    e.preventDefault();
+    const status = document.getElementById('submit-status');
+    status.innerText = "REPORT SUBMITTED! THANK YOU.";
+    status.style.display = "block";
+    setTimeout(() => {
+        status.style.display = "none";
+        showRadar();
+    }, 2000);
+}

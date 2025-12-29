@@ -149,6 +149,24 @@ a:hover {
     position: relative;
     border: var(--border-width) solid var(--charcoal);
     background: var(--parchment);
+    box-shadow: 4px 4px 0px var(--charcoal);
+}
+
+.list-item {
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    background: var(--white);
+    transition: transform 0.1s ease;
+}
+
+.list-item:hover {
+    background: var(--parchment);
+    transform: translateX(4px);
+}
+
+.list-item:last-child {
+    border-bottom: none;
 }
 
 .header {
