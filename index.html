@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>co.lok.kan | Find Your Perfect Workspace in Jakarta</title>
+    <link rel="stylesheet" href="src/styles/global.css">
+    <link rel="manifest" href="manifest.json">
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALYyxOdcvmRvhA1ogQ-kyN0JIa_FWHeTw&libraries=places&callback=initMap"
+        async defer></script>
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- Brand Header Bar -->
+        <div
+            style="background: var(--charcoal); color: var(--parchment); padding: 8px 16px; display: flex; align-items: center; gap: 12px; border-bottom: var(--border-width) solid var(--charcoal);">
+            <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Plug Prongs -->
+                <rect x="35" y="10" width="8" height="20" fill="var(--mother-yellow)" rx="2" />
+                <rect x="57" y="10" width="8" height="20" fill="var(--mother-yellow)" rx="2" />
+                <!-- Letter C / Plug Body -->
+                <path d="M75 40 C 75 25, 25 25, 25 55 C 25 85, 75 85, 75 70" stroke="var(--mother-blue)"
+                    stroke-width="12" fill="none" stroke-linecap="round" />
+                <!-- Central Connection -->
+                <circle cx="50" cy="55" r="6" fill="var(--white)" />
+            </svg>
+            <span style="font-weight: 700; font-size: 20px; letter-spacing: 0.15em;">CO.LOK.KAN</span>
+        </div>
+
+        <!-- Persistent Search Header -->
+        <div class="header" style="top: 40px; height: 60px;">
+            <input type="text" class="search-input" placeholder="Search area or cafe name...">
+            <button class="btn" style="padding: 8px 16px; background: var(--white);"
+                onclick="toggleModal('filter-modal', true)">Filter</button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="container" style="padding-bottom: 80px;">
+
+            <!-- View A: Radar (Tabbed) -->
+            <div id="radar-view">
+                <div style="display: flex; border-bottom: 2px solid #383838; margin-bottom: 20px;">
+                    <button class="tab-btn active" onclick="switchTab('map')">Map View</button>
+                    <button class="tab-btn" onclick="switchTab('list')">List View</button>
+                </div>
+
+                <div id="map-tab" class="tab-content">
+                    <div class="card"
+                        style="height: 400px; background: #eee; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <!-- Mock Map -->
+                        <div style="text-align: center;">
+                            <p style="font-weight: 700;">GOOGLE MAPS INTEGRATION</p>
+                            <p style="font-size: 12px; color: #666;">Jakarta centered</p>
+                        </div>
+                        <!-- Mock Pin -->
+                        <div class="map-pin" style="top: 40%; left: 30%;" onclick="showInfoCard('Common Grounds')">
+                        </div>
+                        <div class="map-pin" style="top: 60%; left: 70%;" onclick="showInfoCard('Giyanti Coffee')">
+                        </div>
+
+                        <!-- Info Card Overlay -->
+                        <div id="map-info-card" class="card"
+                            style="position: absolute; bottom: 20px; left: 20px; right: 20px; display: none; z-index: 10;">
+                            <h2 id="info-card-name">Cafe Name</h2>
+                            <div style="display: flex; gap: 8px;">
+                                <span class="badge badge-speed" id="info-card-wifi">50 Mbps</span>
+                                <span class="badge badge-plug" id="info-card-plugs">Plenty</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="list-tab" class="tab-content" style="display: none;">
+                    <div id="cafe-list">
+                        <!-- Cafe items will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- View C: Cafe Detail (Hidden by default) -->
+            <div id="detail-view" style="display: none;">
+                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()">← Back to Radar</button>
+                <div class="hero-carousel">
+                    <div class="card"
+                        style="height: 200px; display: flex; align-items: center; justify-content: center; background: #ddd;">
+                        [ IMAGE CAROUSEL PLACEHOLDER ]
+                    </div>
+                </div>
+                <h1 id="detail-name">Cafe Name</h1>
+
+                <h2 style="font-size: 14px; margin-top: 30px;">WFC Vital Signs</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="card" style="text-align: center;">
+                        <span style="font-size: 24px; font-weight: 700;" id="detail-wifi">55</span>
+                        <div style="font-size: 10px; font-weight: 700;">MBPS</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <span style="font-size: 12px; font-weight: 700;" id="detail-plugs">PLENTY</span>
+                        <div style="font-size: 10px; font-weight: 700;">PLUGS</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <span style="font-size: 12px; font-weight: 700;" id="detail-noise">CALM</span>
+                        <div style="font-size: 10px; font-weight: 700;">NOISE</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Info</h2>
+                    <p id="detail-address">Address here...</p>
+                    <p style="font-weight: 700; margin-top: 10px;">Hours: <span id="detail-hours">8:00 - 20:00</span>
+                    </p>
+                    <a href="#" class="btn btn-primary" style="margin-top: 15px; width: 100%;">Open in Maps</a>
+                </div>
+
+                <div class="card">
+                    <h2>Interior Vibe</h2>
+                    <div id="detail-aesthetic" style="font-size: 20px;">⭐⭐⭐⭐</div>
+                </div>
+
+                <div class="card">
+                    <h2>Community Verification</h2>
+                    <ul id="verification-list" style="list-style: none; font-size: 12px;">
+                        <li>• Verified by @malka (Today) - 52 Mbps</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- View D: Contribute (Hidden by default) -->
+            <div id="contribute-view" style="display: none;">
+                <h1>Add Report</h1>
+                <div class="card">
+                    <form id="contribute-form">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display:block; font-weight:700; margin-bottom:8px;">SELECT CAFE</label>
+                            <select class="search-input" style="width:100%;" id="contribute-cafe-select">
+                                <option>Common Grounds</option>
+                                <option>Giyanti Coffee</option>
+                                <option>Lucky Cat</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display:block; font-weight:700; margin-bottom:8px;">UPLOAD SPEEDTEST
+                                SCREENSHOT</label>
+                            <div class="card" style="border-style: dashed; text-align: center; cursor: pointer;"
+                                onclick="document.getElementById('file-input').click()">
+                                <span id="upload-status">Click to Select Screenshot</span>
+                                <input type="file" id="file-input" style="display:none;"
+                                    onchange="handleFileUpload(this)">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display:block; font-weight:700; margin-bottom:8px;">PLUG AVAILABILITY</label>
+                            <select class="search-input" style="width:100%;">
+                                <option>Plugs at every table</option>
+                                <option>Plugs mostly at bar/walls</option>
+                                <option>Scarce plugs</option>
+                                <option>No plugs</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display:block; font-weight:700; margin-bottom:8px;">NOISE LEVEL</label>
+                            <select class="search-input" style="width:100%;">
+                                <option>Library Quiet</option>
+                                <option>Coffee Shop Buzz</option>
+                                <option>Loud Music/Crowded</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-yellow" style="width: 100%;">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- View B: Filter Modal Overlay -->
+        <div id="filter-modal" class="modal-overlay" style="display: none;">
+            <div class="modal">
+                <h2>Filters</h2>
+                <div style="margin-bottom: 20px;">
+                    <label class="filter-option"><input type="checkbox"> Fast WiFi Only (>50 Mbps)</label>
+                    <label class="filter-option"><input type="checkbox"> Plenty of Plugs Only</label>
+                    <label class="filter-option"><input type="checkbox"> Quiet Zone</label>
+                </div>
+
+                <label style="display:block; font-weight:700; margin-bottom:8px;">Region</label>
+                <select class="search-input" style="width: 100%; margin-bottom: 30px;">
+                    <option>South Jakarta</option>
+                    <option>Central Jakarta</option>
+                    <option>North Jakarta</option>
+                    <option>West Jakarta</option>
+                </select>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" style="flex:1;" onclick="toggleModal('filter-modal', false)">Cancel</button>
+                    <button class="btn btn-primary" style="flex:1;" onclick="applyFilters()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="showRadar()">Radar</div>
+            <div class="nav-item" onclick="showContribute()">Contribute</div>
+            <div class="nav-item">Profile</div>
+        </div>
+    </div>
+
+    <style>
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .tab-btn.active {
+            color: var(--charcoal);
+            border-bottom: 4px solid var(--charcoal);
+            margin-bottom: -2px;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--mother-blue);
+            border: 2px solid var(--charcoal);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            cursor: pointer;
+        }
+
+        .map-pin::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--white);
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            border-radius: 50%;
+        }
+    </style>
+
+    <script src="src/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker Registered'));
+        }
+    </script>
+</body>
+
+</html>

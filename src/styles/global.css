@@ -1,0 +1,223 @@
+/* src/styles/global.css */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    /* Color Palette */
+    --parchment: #F4EFEA;
+    --charcoal: #383838;
+    --mother-yellow: #FAD80D;
+    --mother-blue: #6FC2FF;
+    --mother-teal: #00E676;
+    --white: #FFFFFF;
+
+    /* Typography */
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Spacing */
+    --base-unit: 4px;
+    --space-xs: 8px;
+    --space-s: 16px;
+    --space-m: 32px;
+    --space-l: 64px;
+
+    /* Borders & Radius */
+    --border-width: 2px;
+    --radius-s: 2px;
+    --radius-m: 4px;
+
+    /* Shadows */
+    --shadow-sm: 2px 2px 0px var(--charcoal);
+    --shadow-md: 4px 4px 0px var(--charcoal);
+    --shadow-lg: 12px 12px 0px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-mono);
+}
+
+body {
+    background-color: var(--parchment);
+    color: var(--charcoal);
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+}
+
+h1,
+h2,
+h3 {
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 700;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: var(--space-s);
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: var(--space-xs);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+}
+
+a:hover {
+    opacity: 0.7;
+}
+
+/* Brutalist Button */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 14px;
+    border: var(--border-width) solid var(--charcoal);
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--white);
+    color: var(--charcoal);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px var(--charcoal);
+}
+
+.btn-primary {
+    background: var(--mother-blue);
+}
+
+.btn-yellow {
+    background: var(--mother-yellow);
+}
+
+/* Cards */
+.card {
+    background: var(--white);
+    border: var(--border-width) solid var(--charcoal);
+    border-radius: var(--radius-m);
+    padding: var(--space-s);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-s);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid var(--charcoal);
+    border-radius: var(--radius-s);
+    margin-right: 4px;
+}
+
+.badge-speed {
+    background: var(--mother-teal);
+}
+
+.badge-plug {
+    background: var(--mother-blue);
+}
+
+/* Layout Components */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--space-s);
+}
+
+.tab-content {
+    height: 500px;
+    margin-top: 20px;
+    overflow-y: auto;
+    position: relative;
+    border: var(--border-width) solid var(--charcoal);
+    background: var(--parchment);
+}
+
+.header {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 0 var(--space-s);
+    background: var(--parchment);
+    border-bottom: var(--border-width) solid var(--charcoal);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.search-input {
+    flex: 1;
+    height: 40px;
+    border: var(--border-width) solid var(--charcoal);
+    border-radius: var(--radius-s);
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--white);
+    border-top: var(--border-width) solid var(--charcoal);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+}
+
+.nav-item {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(56, 56, 56, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: var(--white);
+    border: var(--border-width) solid var(--charcoal);
+    border-radius: var(--radius-m);
+    width: 90%;
+    max-width: 400px;
+    padding: var(--space-m);
+    box-shadow: var(--shadow-lg);
+}
