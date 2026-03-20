@@ -398,7 +398,18 @@ function handleFileUpload(input) {
     }
 }
 
-// 7. Initialize
+// 7. Keyboard navigation for div-based interactive elements
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        const target = e.target;
+        if (target.classList.contains('nav-item') || target.classList.contains('achievement-icon')) {
+            e.preventDefault();
+            target.click();
+        }
+    }
+});
+
+// 8. Initialize
 // Handled by callback and checkGoogleMaps fallback
 document.querySelector('.search-input').addEventListener('input', (e) => {
     searchQuery = e.target.value.toLowerCase();
@@ -419,7 +430,27 @@ function applyFilters() {
 function handleFormSubmit(e) {
     e.preventDefault();
     const status = document.getElementById('submit-status');
-    status.innerText = "REPORT SUBMITTED! THANK YOU.";
+    const uploadStatus = document.getElementById('upload-status').innerText;
+    const cafeSelect = document.getElementById('contribute-cafe-select');
+
+    // Validate cafe selection
+    if (!cafeSelect || !cafeSelect.value || cafeSelect.value.trim() === '') {
+        status.innerText = "Eh, mau lapor kafe mana? Pilih dulu dong! 🙈";
+        status.style.color = "red";
+        status.style.display = "block";
+        return;
+    }
+
+    // Validate screenshot upload
+    if (uploadStatus === "Click to Select Screenshot" || uploadStatus === "Analyzing Screenshot...") {
+        status.innerText = "Halah, buktinya mana? Upload screenshot speedtest dulu, baru ngomong! 📸";
+        status.style.color = "red";
+        status.style.display = "block";
+        return;
+    }
+
+    status.innerText = "REPORT SUBMITTED! YOU'RE A LEGEND. 🫡";
+    status.style.color = "var(--mother-teal)";
     status.style.display = "block";
     setTimeout(() => {
         status.style.display = "none";

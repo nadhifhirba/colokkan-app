@@ -1,13 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>co.lok.kan | Find Your Perfect Workspace in Jakarta</title>
+    <title>co.lok.kan | Temukan Workspace Terbaik di Jakarta</title>
+    <meta name="description" content="co.lok.kan — temukan coworking space, kafe, dan workspace terbaik di Jakarta. Cek WiFi speed, ketersediaan colokan, dan noise level sebelum datang.">
+    <meta name="theme-color" content="#383838">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://colokkan.netlify.app/">
+    <meta property="og:title" content="co.lok.kan | Temukan Workspace Terbaik di Jakarta">
+    <meta property="og:description" content="Cek WiFi speed, ketersediaan colokan, dan noise level sebelum datang ke kafe atau coworking space di Jakarta.">
+    <meta property="og:image" content="https://colokkan.netlify.app/icon-512.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="co.lok.kan | Temukan Workspace Terbaik di Jakarta">
+    <meta name="twitter:description" content="Cek WiFi speed, ketersediaan colokan, dan noise level sebelum datang ke kafe atau coworking space di Jakarta.">
+    <meta name="twitter:image" content="https://colokkan.netlify.app/icon-512.png">
+
     <link rel="stylesheet" href="src/styles/global.css">
     <link rel="manifest" href="manifest.json">
-    <script src="src/app.js"></script>
     <script
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALYyxOdcvmRvhA1ogQ-kyN0JIa_FWHeTw&libraries=places&callback=initMap"
         async defer></script>
@@ -19,7 +35,7 @@
         <!-- Brand Header Bar -->
         <div
             style="background: var(--charcoal); color: var(--parchment); padding: 8px 16px; display: flex; align-items: center; gap: 12px; border-bottom: var(--border-width) solid var(--charcoal);">
-            <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                 <!-- Plug Prongs -->
                 <rect x="35" y="10" width="8" height="20" fill="var(--mother-yellow)" rx="2" />
                 <rect x="57" y="10" width="8" height="20" fill="var(--mother-yellow)" rx="2" />
@@ -184,6 +200,7 @@
 
             <!-- View E: Profile (Placeholder) -->
             <div id="profile-view" style="display: none;">
+                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()">← Back</button>
                 <h1>YOUR PROFILE</h1>
                 <div class="card" style="text-align: center; padding: 40px 20px;">
                     <div
@@ -204,6 +221,17 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card">
+                    <h2 style="font-size: 14px; margin-bottom: 15px;">Achievements</h2>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div class="achievement-icon" title="🚀 Early Adopter — UNLOCKED! Kamu salah satu pioneer co.lok.kan. Respect." tabindex="0" aria-label="Achievement: Early Adopter — unlocked">🚀</div>
+                        <div class="achievement-icon" title="⚡ Speed Demon — UNLOCKED! Udah verifikasi 10+ spot WiFi kenceng. Ngebut terus!" tabindex="0" aria-label="Achievement: Speed Demon — unlocked">⚡</div>
+                        <div class="achievement-icon" title="🌙 Night Owl — LOCKED. Laporkan satu spot setelah jam 22:00 untuk unlock." style="opacity: 0.3;" tabindex="0" aria-label="Achievement: Night Owl — locked, report a spot after 10PM to unlock">🌙</div>
+                        <div class="achievement-icon" title="🔌 Connector — LOCKED. Verifikasi 50 colokan untuk unlock. Kamu baru mulai!" style="opacity: 0.3;" tabindex="0" aria-label="Achievement: Connector — locked, verify 50 power outlets to unlock">🔌</div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h2 style="font-size: 14px;">Recent Activity</h2>
                     <div style="font-size: 12px;">• Reported Common Grounds (2d ago)</div>
@@ -240,11 +268,11 @@
         </div>
 
         <!-- Bottom Navigation -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="showRadar()">Radar</div>
-            <div class="nav-item" onclick="showContribute()">Contribute</div>
-            <div class="nav-item" onclick="showProfile()">Profile</div>
-        </div>
+        <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+            <div class="nav-item" onclick="showRadar()" role="button" tabindex="0" aria-label="Radar — lihat peta dan daftar kafe">Radar</div>
+            <div class="nav-item" onclick="showContribute()" role="button" tabindex="0" aria-label="Contribute — laporkan kecepatan WiFi">Contribute</div>
+            <div class="nav-item" onclick="showProfile()" role="button" tabindex="0" aria-label="Profile — lihat profil dan achievements kamu">Profile</div>
+        </nav>
     </div>
 
     <style>

@@ -1,0 +1,15 @@
+{
+  "name": "colokkan-app",
+  "version": "1.0.0",
+  "description": "Community-powered PWA to find work-friendly cafes in Jakarta",
+  "private": true,
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "python3 -m http.server 8080",
+    "lint": "npx eslint src/app.js --no-eslintrc -c '{\"env\":{\"browser\":true,\"es2021\":true},\"rules\":{\"no-unused-vars\":\"warn\",\"no-undef\":\"warn\"}}'",
+    "test": "echo 'No automated tests yet — manual test: python3 -m http.server 8080 and verify PWA install, offline mode, and form validation.' && exit 0"
+  },
+  "keywords": ["pwa", "jakarta", "coworking", "cafe", "indonesia"],
+  "author": "Malka (NHADesign)",
+  "license": "MIT"
+}

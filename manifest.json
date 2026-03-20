@@ -1,10 +1,12 @@
 {
   "name": "co.lok.kan",
   "short_name": "colokkan",
+  "description": "Temukan coworking space dan kafe terbaik di Jakarta — cek WiFi speed, ketersediaan colokan, dan noise level sebelum datang.",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#F4EFEA",
   "theme_color": "#383838",
+  "lang": "id",
   "icons": [
     {
       "src": "icon-192.png",

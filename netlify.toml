@@ -1,5 +1,5 @@
 # netlify.toml
-# Optimizes co.lok.kan for PWA performance and clean URLs
+# Optimizes co.lok.kan for PWA performance, clean URLs, and security
 
 [[headers]]
   for = "/*"
@@ -7,6 +7,9 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://*.ggpht.com; connect-src 'self' https://maps.googleapis.com; frame-src 'none'; object-src 'none';"
     Service-Worker-Allowed = "/"
 
 [[headers]]

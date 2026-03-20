@@ -192,6 +192,41 @@ a:hover {
     outline: none;
 }
 
+.search-input:focus-visible {
+    outline: 3px solid var(--mother-blue);
+    outline-offset: 2px;
+}
+
+/* Keyboard focus states */
+.btn:focus-visible,
+.nav-item:focus-visible,
+.tab-btn:focus-visible {
+    outline: 3px solid var(--mother-blue);
+    outline-offset: 2px;
+}
+
+.achievement-icon {
+    font-size: 28px;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-s);
+}
+
+.achievement-icon:focus-visible {
+    outline: 3px solid var(--mother-yellow);
+    outline-offset: 4px;
+    border-radius: var(--radius-s);
+}
+
+.list-item:focus-visible {
+    outline: 3px solid var(--mother-blue);
+    outline-offset: -2px;
+}
+
 .bottom-nav {
     position: fixed;
     bottom: 0;
