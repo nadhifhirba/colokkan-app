@@ -50,9 +50,9 @@
 
         <!-- Persistent Search Header -->
         <div class="header" style="top: 40px; height: 60px;">
-            <input type="text" class="search-input" placeholder="Search area or cafe name...">
-            <button class="btn" style="padding: 8px 16px; background: var(--white);"
-                onclick="toggleModal('filter-modal', true)">Filter</button>
+            <input type="text" class="search-input" placeholder="Search area or cafe name..." aria-label="Cari area atau nama kafe...">
+<button class="btn" style="padding: 8px 16px; background: var(--white);"
+    onclick="toggleModal('filter-modal', true)" aria-label="Buka filter">Filter</button>
         </div>
 
         <!-- Main Content Area -->
@@ -61,8 +61,8 @@
             <!-- View A: Radar (Tabbed) -->
             <div id="radar-view">
                 <div style="display: flex; border-bottom: 2px solid #383838; margin-bottom: 20px;">
-                    <button class="tab-btn active" onclick="switchTab('map')">Map View</button>
-                    <button class="tab-btn" onclick="switchTab('list')">List View</button>
+                    <button class="tab-btn active" onclick="switchTab('map')" aria-label="Tampilkan tampilan peta">Map View</button>
+                    <button class="tab-btn" onclick="switchTab('list')" aria-label="Tampilkan daftar">List View</button>
                 </div>
 
                 <div id="map-tab" class="tab-content">
@@ -74,9 +74,9 @@
                             <p style="font-size: 12px; color: #666;">Jakarta centered</p>
                         </div>
                         <!-- Mock Pin -->
-                        <div class="map-pin" style="top: 40%; left: 30%;" onclick="showInfoCard('Common Grounds')">
+                        <div class="map-pin" style="top: 40%; left: 30%;" onclick="showInfoCard('Common Grounds')" aria-label="Lihat detail Common Grounds">
                         </div>
-                        <div class="map-pin" style="top: 60%; left: 70%;" onclick="showInfoCard('Giyanti Coffee')">
+                        <div class="map-pin" style="top: 60%; left: 70%;" onclick="showInfoCard('Giyanti Coffee')" aria-label="Lihat detail Giyanti Coffee">
                         </div>
 
                         <!-- Info Card Overlay -->
@@ -100,7 +100,7 @@
 
             <!-- View C: Cafe Detail (Hidden by default) -->
             <div id="detail-view" style="display: none;">
-                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()">← Back to Radar</button>
+                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()" aria-label="Kembali ke radar">← Back to Radar</button>
                 <div class="hero-carousel">
                     <div class="card"
                         style="height: 200px; display: flex; align-items: center; justify-content: center; background: #ddd;">
@@ -130,7 +130,7 @@
                     <p id="detail-address">Address here...</p>
                     <p style="font-weight: 700; margin-top: 10px;">Hours: <span id="detail-hours">8:00 - 20:00</span>
                     </p>
-                    <a href="#" class="btn btn-primary" style="margin-top: 15px; width: 100%;">Open in Maps</a>
+                    <a href="#" class="btn btn-primary" style="margin-top: 15px; width: 100%;" aria-label="Buka lokasi di Google Maps">Open in Maps</a>
                 </div>
 
                 <div class="card">
@@ -153,7 +153,7 @@
                     <form id="contribute-form" onsubmit="handleFormSubmit(event)">
                         <div style="margin-bottom: 20px;">
                             <label style="display:block; font-weight:700; margin-bottom:8px;">SELECT CAFE</label>
-                            <select class="search-input" style="width:100%;" id="contribute-cafe-select">
+                            <select class="search-input" style="width:100%;" id="contribute-cafe-select" aria-label="Pilih kafe">
                                 <option>Common Grounds</option>
                                 <option>Giyanti Coffee</option>
                                 <option>Lucky Cat</option>
@@ -163,34 +163,33 @@
                         <div style="margin-bottom: 20px;">
                             <label style="display:block; font-weight:700; margin-bottom:8px;">UPLOAD SPEEDTEST
                                 SCREENSHOT</label>
-                            <div class="card" style="border-style: dashed; text-align: center; cursor: pointer;"
+                            <div class="card" style="border-style: dashed; text-align: center; cursor: pointer;" aria-label="Unggah screenshot speedtest, klik untuk pilih file"
                                 onclick="document.getElementById('file-input').click()">
-                                <span id="upload-status">Click to Select Screenshot</span>
-                                <input type="file" id="file-input" style="display:none;"
+                                <span id="upload-status" aria-label="Status upload: klik untuk memilih screenshot">Click to Select Screenshot</span>
+                                <input type="file" id="file-input" style="display:none;" aria-label="Input file screenshot speedtest"
                                     onchange="handleFileUpload(this)">
                             </div>
                         </div>
 
                         <div style="margin-bottom: 20px;">
                             <label style="display:block; font-weight:700; margin-bottom:8px;">PLUG AVAILABILITY</label>
-                            <select class="search-input" style="width:100%;">
-                                <option>Plugs at every table</option>
-                                <option>Plugs mostly at bar/walls</option>
-                                <option>Scarce plugs</option>
-                                <option>No plugs</option>
-                            </select>
+<select class="search-input" style="width:100%;" aria-label="Pilih ketersediaan colokan">
+                            <option value="">Semua Colokan</option>
+                            <option value="available">Tersedia</option>
+                            <option value="occupied">Terisi</option>
+                          </select>
                         </div>
 
                         <div style="margin-bottom: 20px;">
                             <label style="display:block; font-weight:700; margin-bottom:8px;">NOISE LEVEL</label>
-                            <select class="search-input" style="width:100%;">
+                            <select class="search-input" style="width:100%;" aria-label="Pilih tingkat kebisingan">
                                 <option>Library Quiet</option>
                                 <option>Coffee Shop Buzz</option>
                                 <option>Loud Music/Crowded</option>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-yellow" style="width: 100%;">Submit Report</button>
+                        <button type="submit" class="btn btn-yellow" style="width: 100%;" aria-label="Kirim laporan">Submit Report</button>
                         <p id="submit-status"
                             style="display:none; color:var(--mother-teal); font-weight:700; margin-top:10px; text-align:center;">
                         </p>
@@ -200,7 +199,7 @@
 
             <!-- View E: Profile (Placeholder) -->
             <div id="profile-view" style="display: none;">
-                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()">← Back</button>
+                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()" aria-label="Kembali ke radar">← Back</button>
                 <h1>YOUR PROFILE</h1>
                 <div class="card" style="text-align: center; padding: 40px 20px;">
                     <div
@@ -253,7 +252,7 @@
                 </div>
 
                 <label style="display:block; font-weight:700; margin-bottom:8px;">Region</label>
-                <select class="search-input" style="width: 100%; margin-bottom: 30px;">
+                <select class="search-input" style="width: 100%; margin-bottom: 30px;" aria-label="Pilih wilayah Jakarta">
                     <option>South Jakarta</option>
                     <option>Central Jakarta</option>
                     <option>North Jakarta</option>
@@ -261,8 +260,8 @@
                 </select>
 
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn" style="flex:1;" onclick="toggleModal('filter-modal', false)">Cancel</button>
-                    <button class="btn btn-primary" style="flex:1;" onclick="applyFilters()">Apply</button>
+                    <button class="btn" style="flex:1;" onclick="toggleModal('filter-modal', false)" aria-label="Batal, tutup filter">Cancel</button>
+                    <button class="btn btn-primary" style="flex:1;" onclick="applyFilters()" aria-label="Terapkan filter">Apply</button>
                 </div>
             </div>
         </div>
