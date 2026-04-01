@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>co.lok.kan | Temukan Workspace Terbaik di Jakarta</title>
     <meta name="description" content="co.lok.kan — temukan coworking space, kafe, dan workspace terbaik di Jakarta. Cek WiFi speed, ketersediaan colokan, dan noise level sebelum datang.">
     <meta name="theme-color" content="#383838">
@@ -23,13 +23,14 @@
     <meta name="twitter:image" content="https://colokkan.netlify.app/icon-512.png">
 
     <link rel="stylesheet" href="src/styles/global.css">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALYyxOdcvmRvhA1ogQ-kyN0JIa_FWHeTw&libraries=places&callback=initMap"
-        async defer></script>
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Langsung ke konten</a>
 
     <div id="app">
         <!-- Brand Header Bar -->
@@ -50,66 +51,85 @@
 
         <!-- Persistent Search Header -->
         <div class="header" style="top: 40px; height: 60px;">
-            <input type="text" class="search-input" placeholder="Search area or cafe name..." aria-label="Cari area atau nama kafe...">
-<button class="btn" style="padding: 8px 16px; background: var(--white);"
-    onclick="toggleModal('filter-modal', true)" aria-label="Buka filter">Filter</button>
+            <input type="text" class="search-input" id="search-input" placeholder="Cari area atau nama kafe..." aria-label="Cari area atau nama kafe...">
+            <div class="lang-toggle" role="group" aria-label="Language switcher">
+                <button class="lang-btn active" id="lang-id-btn" type="button" onclick="setLanguage('id')">ID</button>
+                <button class="lang-btn" id="lang-en-btn" type="button" onclick="setLanguage('en')">EN</button>
+            </div>
+            <button class="btn" id="filter-trigger" style="padding: 8px 16px; background: var(--white);"
+                onclick="toggleModal('filter-modal', true)" aria-label="Buka filter">Filter</button>
         </div>
 
         <!-- Main Content Area -->
-        <div class="container" style="padding-bottom: 80px;">
+        <main id="main-content" class="container" style="padding-bottom: 80px;">
 
             <!-- View A: Radar (Tabbed) -->
             <div id="radar-view">
-                <div style="display: flex; border-bottom: 2px solid #383838; margin-bottom: 20px;">
-                    <button class="tab-btn active" onclick="switchTab('map')" aria-label="Tampilkan tampilan peta">Map View</button>
-                    <button class="tab-btn" onclick="switchTab('list')" aria-label="Tampilkan daftar">List View</button>
+                <div class="tab-strip" role="tablist" aria-label="Tampilan radar">
+                    <button class="tab-btn" id="map-tab-btn" data-tab="map" role="tab" aria-selected="false" onclick="switchTab('map')" aria-label="Tampilkan tampilan kawasan">Kawasan</button>
+                    <button class="tab-btn active" id="list-tab-btn" data-tab="list" role="tab" aria-selected="true" onclick="switchTab('list')" aria-label="Tampilkan daftar">Daftar</button>
                 </div>
 
-                <div id="map-tab" class="tab-content">
-                    <div class="card"
-                        style="height: 400px; background: #eee; display: flex; align-items: center; justify-content: center; position: relative;">
-                        <!-- Mock Map -->
-                        <div style="text-align: center;">
-                            <p style="font-weight: 700;">GOOGLE MAPS INTEGRATION</p>
-                            <p style="font-size: 12px; color: #666;">Jakarta centered</p>
-                        </div>
-                        <!-- Mock Pin -->
-                        <div class="map-pin" style="top: 40%; left: 30%;" onclick="showInfoCard('Common Grounds')" aria-label="Lihat detail Common Grounds">
-                        </div>
-                        <div class="map-pin" style="top: 60%; left: 70%;" onclick="showInfoCard('Giyanti Coffee')" aria-label="Lihat detail Giyanti Coffee">
-                        </div>
-
-                        <!-- Info Card Overlay -->
-                        <div id="map-info-card" class="card"
-                            style="position: absolute; bottom: 20px; left: 20px; right: 20px; display: none; z-index: 10;">
-                            <h2 id="info-card-name">Cafe Name</h2>
-                            <div style="display: flex; gap: 8px;">
-                                <span class="badge badge-speed" id="info-card-wifi">50 Mbps</span>
-                                <span class="badge badge-plug" id="info-card-plugs">Plenty</span>
+                <div class="card mode-rail card--compact">
+                    <span class="section-label" id="mode-label">Mode kerja</span>
+                    <div class="mode-chips" role="group" aria-label="Pilih mode kerja">
+                        <button class="mode-chip" id="mode-focus-btn" data-mode="focus" type="button" onclick="setWorkMode('focus')" aria-pressed="true">Fokus</button>
+                        <button class="mode-chip" id="mode-meeting-btn" data-mode="meeting" type="button" onclick="setWorkMode('meeting')" aria-pressed="false">Meeting</button>
+                        <button class="mode-chip" id="mode-vibe-btn" data-mode="vibe" type="button" onclick="setWorkMode('vibe')" aria-pressed="false">Ngopi santai</button>
+                        <button class="mode-chip" id="mode-all-btn" data-mode="all" type="button" onclick="setWorkMode('all')" aria-pressed="false">Semua</button>
+                    </div>
+                    <div class="best-match">
+                        <div>
+                            <span class="section-label" id="best-match-label">Pilihan terbaik sekarang</span>
+                            <h2 class="best-match-title" id="best-match-name">Memuat spot terbaik...</h2>
+                            <p class="best-match-copy" id="best-match-meta">Skor akan muncul setelah daftar spot dihitung.</p>
+                            <p class="best-match-copy" id="best-match-reason">Pilih mode untuk melihat rekomendasi yang paling cocok.</p>
+                            <div style="margin-top: 12px;">
+                                <button class="btn btn-primary" id="best-match-action" type="button" onclick="openBestMatch()" aria-label="Buka rekomendasi terbaik">Buka rekomendasi</button>
                             </div>
+                        </div>
+                        <div class="best-match-score" aria-live="polite">
+                            <strong id="best-match-score">--</strong>
+                            <span id="best-match-score-label">Skor kecocokan</span>
                         </div>
                     </div>
                 </div>
 
+                <div id="map-tab" class="tab-content">
+                    <div class="map-shell" id="map-shell">
+                        <div>
+                            <span class="map-shell__eyebrow" id="map-shell-eyebrow">Map mode</span>
+                            <h2 class="map-shell__title" id="map-shell-title">Google Maps aktif hanya kalau browser key sudah direstrict</h2>
+                            <p class="map-shell__copy" id="map-shell-copy">Kalau key belum dikonfigurasi, app otomatis jatuh balik ke radar lokal tanpa third-party map.</p>
+                        </div>
+                    </div>
+
+                    <div id="google-map" class="google-map" hidden aria-label="Peta Google Maps spot kerja Jakarta"></div>
+                    <div id="map-radar" class="map-radar" aria-label="Peta radar spot kerja Jakarta"></div>
+
+                    <div id="area-grid" class="area-grid" aria-label="Ringkasan kawasan">
+                    </div>
+                </div>
+
                 <div id="list-tab" class="tab-content" style="display: none;">
-                    <div id="cafe-list">
-                        <!-- Cafe items will be injected here -->
+                    <div id="cafe-list" role="list" aria-label="Daftar spot kerja">
+                        <!-- Spot list will be injected here -->
                     </div>
                 </div>
             </div>
 
             <!-- View C: Cafe Detail (Hidden by default) -->
             <div id="detail-view" style="display: none;">
-                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()" aria-label="Kembali ke radar">← Back to Radar</button>
+                <button class="btn" id="detail-back-btn" style="margin-bottom: 20px;" onclick="showRadar()" aria-label="Kembali ke radar">← Kembali ke radar</button>
                 <div class="hero-carousel">
                     <div class="card"
                         style="height: 200px; display: flex; align-items: center; justify-content: center; background: #ddd;">
-                        [ IMAGE CAROUSEL PLACEHOLDER ]
+                        [ TEMPAT GALERI FOTO ]
                     </div>
                 </div>
-                <h1 id="detail-name">Cafe Name</h1>
+                <h1 id="detail-name">Nama spot</h1>
 
-                <h2 style="font-size: 14px; margin-top: 30px;">WFC Vital Signs</h2>
+                <h2 style="font-size: 14px; margin-top: 30px;" id="detail-vitals-label">Tanda vital WFC</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="card" style="text-align: center;">
                         <span style="font-size: 24px; font-weight: 700;" id="detail-wifi">55</span>
@@ -126,34 +146,49 @@
                 </div>
 
                 <div class="card">
-                    <h2>Info</h2>
-                    <p id="detail-address">Address here...</p>
-                    <p style="font-weight: 700; margin-top: 10px;">Hours: <span id="detail-hours">8:00 - 20:00</span>
+                    <h2 id="detail-info-label">Info</h2>
+                    <p id="detail-address">Alamat di sini...</p>
+                    <p style="font-weight: 700; margin-top: 10px;">Jam buka: <span id="detail-hours">8:00 - 20:00</span>
                     </p>
-                    <a href="#" class="btn btn-primary" style="margin-top: 15px; width: 100%;" aria-label="Buka lokasi di Google Maps">Open in Maps</a>
+                    <a href="#" id="detail-map-link" class="btn btn-primary" style="margin-top: 15px; width: 100%;" target="_blank" rel="noopener noreferrer" aria-label="Buka lokasi di Google Maps">Buka di Maps</a>
                 </div>
 
                 <div class="card">
-                    <h2>Interior Vibe</h2>
+                    <h2 id="detail-vibe-label">Vibe interior</h2>
                     <div id="detail-aesthetic" style="font-size: 20px;">⭐⭐⭐⭐</div>
                 </div>
 
                 <div class="card">
-                    <h2>Community Verification</h2>
+                    <h2 id="detail-verification-label">Verifikasi komunitas</h2>
+                    <div class="trust-strip">
+                        <div class="trust-pill">
+                            <span class="section-label">Freshness</span>
+                            <strong id="detail-freshness">Belum diverifikasi</strong>
+                        </div>
+                        <div class="trust-pill">
+                            <span class="section-label">Confidence</span>
+                            <strong id="detail-confidence">0/100</strong>
+                        </div>
+                        <div class="trust-pill">
+                            <span class="section-label">Approved reports</span>
+                            <strong id="detail-report-count">0</strong>
+                        </div>
+                    </div>
                     <ul id="verification-list" style="list-style: none; font-size: 12px;">
-                        <li>• Verified by @malka (Today) - 52 Mbps</li>
+                        <li>• Belum ada laporan yang lolos review.</li>
                     </ul>
                 </div>
             </div>
 
             <!-- View D: Contribute (Hidden by default) -->
             <div id="contribute-view" style="display: none;">
-                <h1>Add Report</h1>
+                <h1 id="contribute-title">Tambah laporan</h1>
                 <div class="card">
                     <form id="contribute-form" onsubmit="handleFormSubmit(event)">
                         <div style="margin-bottom: 20px;">
-                            <label style="display:block; font-weight:700; margin-bottom:8px;">SELECT CAFE</label>
+                            <label id="contribute-cafe-label" style="display:block; font-weight:700; margin-bottom:8px;">Pilih spot</label>
                             <select class="search-input" style="width:100%;" id="contribute-cafe-select" aria-label="Pilih kafe">
+                                <option value="">Pilih spot</option>
                                 <option>Common Grounds</option>
                                 <option>Giyanti Coffee</option>
                                 <option>Lucky Cat</option>
@@ -161,35 +196,53 @@
                         </div>
 
                         <div style="margin-bottom: 20px;">
-                            <label style="display:block; font-weight:700; margin-bottom:8px;">UPLOAD SPEEDTEST
-                                SCREENSHOT</label>
+                            <label id="contribute-reporter-label" style="display:block; font-weight:700; margin-bottom:8px;">Nama pelapor</label>
+                            <input type="text" class="search-input" style="width:100%;" id="reporter-name" maxlength="80" placeholder="Nama panggilan kamu">
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label id="contribute-wifi-label" style="display:block; font-weight:700; margin-bottom:8px;">Hasil speedtest (Mbps)</label>
+                            <input type="number" class="search-input" style="width:100%;" id="contribute-wifi" min="1" max="2000" placeholder="Contoh: 68">
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label id="contribute-screenshot-label" style="display:block; font-weight:700; margin-bottom:8px;">Upload screenshot speedtest</label>
                             <div class="card" style="border-style: dashed; text-align: center; cursor: pointer;" aria-label="Unggah screenshot speedtest, klik untuk pilih file"
                                 onclick="document.getElementById('file-input').click()">
-                                <span id="upload-status" aria-label="Status upload: klik untuk memilih screenshot">Click to Select Screenshot</span>
-                                <input type="file" id="file-input" style="display:none;" aria-label="Input file screenshot speedtest"
+                                <span id="upload-status" aria-label="Status upload: klik untuk memilih screenshot">Opsional, tapi sangat membantu reviewer</span>
+                                <input type="file" id="file-input" style="display:none;" aria-label="Input file screenshot speedtest" accept="image/*"
                                     onchange="handleFileUpload(this)">
                             </div>
                         </div>
 
                         <div style="margin-bottom: 20px;">
-                            <label style="display:block; font-weight:700; margin-bottom:8px;">PLUG AVAILABILITY</label>
-<select class="search-input" style="width:100%;" aria-label="Pilih ketersediaan colokan">
-                            <option value="">Semua Colokan</option>
-                            <option value="available">Tersedia</option>
-                            <option value="occupied">Terisi</option>
-                          </select>
-                        </div>
-
-                        <div style="margin-bottom: 20px;">
-                            <label style="display:block; font-weight:700; margin-bottom:8px;">NOISE LEVEL</label>
-                            <select class="search-input" style="width:100%;" aria-label="Pilih tingkat kebisingan">
-                                <option>Library Quiet</option>
-                                <option>Coffee Shop Buzz</option>
-                                <option>Loud Music/Crowded</option>
+                            <label id="contribute-plugs-label" style="display:block; font-weight:700; margin-bottom:8px;">Ketersediaan colokan</label>
+                            <select class="search-input" style="width:100%;" id="contribute-plugs" aria-label="Pilih ketersediaan colokan">
+                                <option value="">Pilih status colokan</option>
+                                <option value="Plenty at most tables">Melimpah di banyak meja</option>
+                                <option value="Reliable on some seats">Ada, tapi pilih tempat</option>
+                                <option value="Limited near walls">Terbatas dekat dinding</option>
+                                <option value="No visible plugs">Nyaris nggak ada</option>
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-yellow" style="width: 100%;" aria-label="Kirim laporan">Submit Report</button>
+                        <div style="margin-bottom: 20px;">
+                            <label id="contribute-noise-label" style="display:block; font-weight:700; margin-bottom:8px;">Tingkat noise</label>
+                            <select class="search-input" style="width:100%;" id="contribute-noise" aria-label="Pilih tingkat kebisingan">
+                                <option value="">Pilih tingkat noise</option>
+                                <option value="Quiet">Tenang banget</option>
+                                <option value="Chill">Ada ambience, masih enak kerja</option>
+                                <option value="Moderate Buzz">Ramai wajar</option>
+                                <option value="Bustling">Hectic / berisik</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label id="contribute-notes-label" style="display:block; font-weight:700; margin-bottom:8px;">Catatan reviewer</label>
+                            <textarea class="search-input" id="contribute-notes" style="width:100%; min-height:100px; padding:12px;" maxlength="500" placeholder="Contoh: lantai 2 tenang, colokan aman dekat jendela."></textarea>
+                        </div>
+
+                        <button type="submit" id="contribute-submit-btn" class="btn btn-yellow" style="width: 100%;" aria-label="Kirim laporan">Kirim laporan</button>
                         <p id="submit-status"
                             style="display:none; color:var(--mother-teal); font-weight:700; margin-top:10px; text-align:center;">
                         </p>
@@ -199,30 +252,30 @@
 
             <!-- View E: Profile (Placeholder) -->
             <div id="profile-view" style="display: none;">
-                <button class="btn" style="margin-bottom: 20px;" onclick="showRadar()" aria-label="Kembali ke radar">← Back</button>
-                <h1>YOUR PROFILE</h1>
+                <button class="btn" id="profile-back-btn" style="margin-bottom: 20px;" onclick="showRadar()" aria-label="Kembali ke radar">← Kembali</button>
+                <h1 id="profile-title">Profil kamu</h1>
                 <div class="card" style="text-align: center; padding: 40px 20px;">
                     <div
                         style="width: 80px; height: 80px; background: var(--mother-blue); border: 2px solid var(--charcoal); margin: 0 auto 20px; border-radius: 4px;">
                     </div>
                     <h2 style="margin-bottom: 5px;">Malka Dev</h2>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 20px;">Digital Nomad | Jakarta</p>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 20px;">Digital nomad | Jakarta</p>
 
                     <div
                         style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 2px solid var(--charcoal); padding-top: 20px;">
                         <div>
-                            <div style="font-size: 20px; font-weight: 700;">14</div>
-                            <div style="font-size: 10px; text-transform: uppercase;">Reports</div>
+                            <div style="font-size: 20px; font-weight: 700;" id="profile-approved-count">0</div>
+                            <div style="font-size: 10px; text-transform: uppercase;">Laporan</div>
                         </div>
                         <div>
-                            <div style="font-size: 20px; font-weight: 700;">250</div>
-                            <div style="font-size: 10px; text-transform: uppercase;">Points</div>
+                            <div style="font-size: 20px; font-weight: 700;" id="profile-queue-count">0</div>
+                            <div style="font-size: 10px; text-transform: uppercase;">Pending</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2 style="font-size: 14px; margin-bottom: 15px;">Achievements</h2>
+                    <h2 id="profile-achievements-label" style="font-size: 14px; margin-bottom: 15px;">Pencapaian</h2>
                     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                         <div class="achievement-icon" title="🚀 Early Adopter — UNLOCKED! Kamu salah satu pioneer co.lok.kan. Respect." tabindex="0" aria-label="Achievement: Early Adopter — unlocked">🚀</div>
                         <div class="achievement-icon" title="⚡ Speed Demon — UNLOCKED! Udah verifikasi 10+ spot WiFi kenceng. Ngebut terus!" tabindex="0" aria-label="Achievement: Speed Demon — unlocked">⚡</div>
@@ -232,45 +285,55 @@
                 </div>
 
                 <div class="card">
-                    <h2 style="font-size: 14px;">Recent Activity</h2>
-                    <div style="font-size: 12px;">• Reported Common Grounds (2d ago)</div>
-                    <div style="font-size: 12px; margin-top: 8px;">• Verified speed at Lucky Cat (1w ago)</div>
+                    <h2 id="profile-activity-label" style="font-size: 14px;">Aktivitas terbaru</h2>
+                    <div style="font-size: 12px;" id="profile-activity">• Belum ada aktivitas live yang ditarik dari backend.</div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center;">
+                        <div>
+                            <h2 id="admin-mode-title" style="font-size: 14px; margin-bottom:4px;">Mode reviewer</h2>
+                            <p style="font-size:12px; color: rgba(56,56,56,0.72);">Masuk pakai admin token untuk approve atau reject laporan.</p>
+                        </div>
+                        <button class="btn btn-primary" id="admin-open-btn" type="button" onclick="openAdminMode()">Buka review</button>
+                    </div>
+                    <p id="admin-status" style="display:none; margin-top:12px; font-size:12px; font-weight:700;"></p>
+                    <div id="admin-queue" class="admin-queue" aria-label="Antrean review admin"></div>
                 </div>
             </div>
 
-        </div>
+        </main>
 
         <!-- View B: Filter Modal Overlay -->
-        <div id="filter-modal" class="modal-overlay" style="display: none;">
+        <div id="filter-modal" class="modal-overlay" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="filter-title">
             <div class="modal">
-                <h2>Filters</h2>
+                <h2 id="filter-title">Filter</h2>
                 <div style="margin-bottom: 20px;">
-                    <label class="filter-option"><input type="checkbox" id="filter-wifi"> Fast WiFi Only (>50
-                        Mbps)</label>
-                    <label class="filter-option"><input type="checkbox" id="filter-plugs"> Plenty of Plugs Only</label>
-                    <label class="filter-option"><input type="checkbox" id="filter-noise"> Quiet Zone</label>
+                    <label class="filter-option"><input type="checkbox" id="filter-wifi"> WiFi cepat saja (&gt;50 Mbps)</label>
+                    <label class="filter-option"><input type="checkbox" id="filter-plugs"> Colokan melimpah saja</label>
+                    <label class="filter-option"><input type="checkbox" id="filter-noise"> Zona tenang</label>
                 </div>
 
-                <label style="display:block; font-weight:700; margin-bottom:8px;">Region</label>
+                <label style="display:block; font-weight:700; margin-bottom:8px;">Wilayah</label>
                 <select class="search-input" style="width: 100%; margin-bottom: 30px;" aria-label="Pilih wilayah Jakarta">
-                    <option>South Jakarta</option>
-                    <option>Central Jakarta</option>
-                    <option>North Jakarta</option>
-                    <option>West Jakarta</option>
+                    <option>Jakarta Selatan</option>
+                    <option>Jakarta Pusat</option>
+                    <option>Jakarta Utara</option>
+                    <option>Jakarta Barat</option>
                 </select>
 
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn" style="flex:1;" onclick="toggleModal('filter-modal', false)" aria-label="Batal, tutup filter">Cancel</button>
-                    <button class="btn btn-primary" style="flex:1;" onclick="applyFilters()" aria-label="Terapkan filter">Apply</button>
+                    <button class="btn" style="flex:1;" onclick="toggleModal('filter-modal', false)" aria-label="Batal, tutup filter">Batal</button>
+                    <button class="btn btn-primary" style="flex:1;" onclick="applyFilters()" aria-label="Terapkan filter">Terapkan</button>
                 </div>
             </div>
         </div>
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-            <div class="nav-item" onclick="showRadar()" role="button" tabindex="0" aria-label="Radar — lihat peta dan daftar kafe">Radar</div>
-            <div class="nav-item" onclick="showContribute()" role="button" tabindex="0" aria-label="Contribute — laporkan kecepatan WiFi">Contribute</div>
-            <div class="nav-item" onclick="showProfile()" role="button" tabindex="0" aria-label="Profile — lihat profil dan achievements kamu">Profile</div>
+            <button class="nav-item" type="button" onclick="showRadar()" aria-label="Radar — lihat peta dan daftar kafe">Radar</button>
+            <button class="nav-item" type="button" onclick="showContribute()" aria-label="Kontribusi — laporkan kecepatan WiFi">Kontribusi</button>
+            <button class="nav-item" type="button" onclick="showProfile()" aria-label="Profil — lihat profil dan pencapaian kamu">Profil</button>
         </nav>
     </div>
 
@@ -283,46 +346,18 @@
             font-weight: 700;
             text-transform: uppercase;
             cursor: pointer;
-            color: #999;
+            color: #5c5c5c;
         }
 
-        .tab-btn.active {
+        .tab-btn.active,
+        .tab-btn[aria-selected="true"] {
             color: var(--charcoal);
             border-bottom: 4px solid var(--charcoal);
             margin-bottom: -2px;
         }
-
-        .filter-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-
-        .map-pin {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: var(--mother-blue);
-            border: 2px solid var(--charcoal);
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            cursor: pointer;
-        }
-
-        .map-pin::after {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: var(--white);
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            border-radius: 50%;
-        }
     </style>
 
+    <script src="shared/seed-cafes.js"></script>
     <script src="src/app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {

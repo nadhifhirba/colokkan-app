@@ -1,11 +1,14 @@
 /* sw.js */
-const CACHE_NAME = 'colokkan-cache-v2';
+const CACHE_NAME = 'colokkan-cache-v4';
 const urlsToCache = [
     '/',
     '/index.html',
+    '/shared/seed-cafes.js',
     '/src/styles/global.css',
     '/src/app.js',
     '/manifest.json',
+    '/favicon.ico',
+    '/icon.svg',
     '/icon-192.png',
     '/icon-512.png'
 ];

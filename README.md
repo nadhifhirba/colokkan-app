@@ -20,7 +20,7 @@ Open [http://localhost:8080](http://localhost:8080).
 
 ## Features
 
-- Map and list view of work-friendly cafes across Jakarta
+- Secure Google Maps view with restricted browser key fallback to local radar
 - Filter by WiFi speed, plug availability, noise level
 - Submit community speed reports with screenshot verification
 - Achievement badge system for active contributors
@@ -31,9 +31,20 @@ Open [http://localhost:8080](http://localhost:8080).
 | | |
 |---|---|
 | Frontend | Vanilla HTML/CSS/JS |
-| Maps | Google Maps JavaScript API + Places API |
+| Maps | Google Maps JavaScript API (render only) + local SVG radar fallback |
 | Hosting | Netlify |
 | PWA | Web App Manifest + Service Worker |
+
+## Map Setup
+
+To enable embedded Google Maps in production without putting sensitive Google APIs in the browser flow:
+
+- set `GOOGLE_MAPS_BROWSER_KEY` in Netlify
+- restrict that key by exact HTTP referrers for your production domains
+- enable only `Maps JavaScript API` on that browser key
+- keep Places, Geocoding, and any other sensitive enrichment server-side if you add them later
+
+If `GOOGLE_MAPS_BROWSER_KEY` is missing, the app automatically falls back to the built-in radar map.
 
 ## Project Structure
 
