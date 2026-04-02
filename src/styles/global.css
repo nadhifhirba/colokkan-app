@@ -177,6 +177,15 @@ a:hover {
     box-shadow: 4px 4px 0px var(--charcoal);
 }
 
+.tab-content--map {
+    height: auto;
+    overflow: visible;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    margin-top: 20px;
+}
+
 .tab-strip {
     display: flex;
     border-bottom: 2px solid var(--charcoal);
@@ -441,12 +450,12 @@ a:hover {
 }
 
 .map-shell {
-    min-height: 400px;
+    min-height: unset;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 24px;
+    padding: 20px 20px 12px;
     background: linear-gradient(180deg, rgba(250, 216, 13, 0.12), rgba(255, 255, 255, 0.96));
 }
 
@@ -471,7 +480,6 @@ a:hover {
 }
 
 .map-radar {
-    margin-top: 16px;
     border: var(--border-width) solid var(--charcoal);
     background:
         linear-gradient(rgba(56, 56, 56, 0.08) 1px, transparent 1px),
@@ -484,7 +492,6 @@ a:hover {
 }
 
 .google-map {
-    margin-top: 16px;
     height: 360px;
     border: var(--border-width) solid var(--charcoal);
     box-shadow: var(--shadow-sm);
@@ -521,6 +528,13 @@ a:hover {
     display: grid;
     gap: 12px;
     margin-top: 16px;
+}
+
+.map-panel {
+    background: var(--white);
+    border: var(--border-width) solid var(--charcoal);
+    box-shadow: 4px 4px 0px var(--charcoal);
+    padding: 0 16px 16px;
 }
 
 .area-card {

@@ -1,6 +1,27 @@
 const { getSupabaseAdmin } = require('./_lib/supabase');
 const { json } = require('./_lib/http');
 const { syncSeedCafes, toClientCafe } = require('./_lib/cafes');
+const seedCafes = require('../../shared/seed-cafes');
+
+function seedFallback() {
+    return seedCafes.map((cafe) => ({
+        id: cafe.id,
+        externalSeedId: cafe.id,
+        name: cafe.name,
+        address: cafe.address,
+        neighborhood: cafe.neighborhood,
+        lat: cafe.lat,
+        lng: cafe.lng,
+        rating: cafe.rating,
+        wifi: cafe.wifi,
+        plugs: cafe.plugs,
+        noise: cafe.noise,
+        confidenceScore: 18,
+        reportCount: 0,
+        lastVerifiedAt: null,
+        source: 'seed'
+    }));
+}
 
 exports.handler = async function handler() {
     try {
@@ -39,9 +60,10 @@ exports.handler = async function handler() {
             source: 'supabase'
         });
     } catch (error) {
-        return json(500, {
-            error: 'Gagal memuat data spot',
-            details: error.message
+        return json(200, {
+            cafes: seedFallback(),
+            source: 'seed-fallback',
+            warning: error.message
         });
     }
 };
