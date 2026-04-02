@@ -55,6 +55,7 @@ function toClientCafe(row) {
         noise: row.current_noise,
         confidenceScore: row.confidence_score || 0,
         reportCount: row.report_count || 0,
+        forecastSummary: row.forecast_summary || {},
         lastVerifiedAt: row.last_verified_at,
         source: row.source || 'seed'
     };
@@ -94,7 +95,7 @@ function buildConfidenceScore(reports) {
     if (!reports.length) return 0;
     const wifiValues = reports.map((report) => report.wifi_mbps).filter((value) => Number.isFinite(value));
     const spread = wifiValues.length > 1 ? standardDeviation(wifiValues) : 0;
-    const latestAt = new Date(reports[0].submitted_at).getTime();
+    const latestAt = new Date(reports[0].observed_at || reports[0].submitted_at).getTime();
     const daysSinceLatest = Math.max(0, (Date.now() - latestAt) / 86400000);
 
     const countScore = Math.min(54, reports.length * 12);
@@ -104,13 +105,86 @@ function buildConfidenceScore(reports) {
     return Math.min(100, Math.round(countScore + consistencyScore + freshnessScore));
 }
 
+function scorePlugsForecast(value) {
+    const plugsText = String(value || '').toLowerCase();
+    if (plugsText.includes('excellent') || plugsText.includes('plentiful') || plugsText.includes('reliable') || plugsText.includes('co-working')) return 100;
+    if (plugsText.includes('good') || plugsText.includes('available')) return 78;
+    if (plugsText.includes('limited') || plugsText.includes('terbatas') || plugsText.includes('spaced')) return 46;
+    if (plugsText.includes('no visible') || plugsText.includes('nyaris')) return 18;
+    return 60;
+}
+
+function scoreNoiseForecast(value) {
+    const noiseText = String(value || '').toLowerCase();
+    if (noiseText.includes('quiet') || noiseText.includes('tenang') || noiseText.includes('peaceful')) return 100;
+    if (noiseText.includes('chill') || noiseText.includes('moderate')) return 78;
+    if (noiseText.includes('buzz') || noiseText.includes('ramai')) return 52;
+    if (noiseText.includes('bustling') || noiseText.includes('hectic') || noiseText.includes('vibrant')) return 28;
+    return 60;
+}
+
+function getForecastSlot(dateValue) {
+    const date = new Date(dateValue);
+    const hour = date.getHours();
+    const weekdayType = date.getDay() === 0 || date.getDay() === 6 ? 'weekend' : 'weekday';
+
+    if (hour < 10) return `${weekdayType}_morning`;
+    if (hour < 14) return `${weekdayType}_lunch`;
+    if (hour < 17) return `${weekdayType}_afternoon`;
+    return `${weekdayType}_evening`;
+}
+
+function buildForecastSummary(reports) {
+    if (!reports.length) {
+        return {
+            slots: [],
+            totalReports: 0,
+            bestSlotKey: null,
+            avoidSlotKey: null
+        };
+    }
+
+    const slotMap = new Map();
+    reports.forEach((report) => {
+        const slotKey = getForecastSlot(report.observed_at || report.submitted_at);
+        const quality = Math.round(
+            ((Math.max(0, Math.min(100, Number(report.wifi_mbps) || 0))) * 0.45) +
+            (scorePlugsForecast(report.plugs) * 0.25) +
+            (scoreNoiseForecast(report.noise) * 0.30)
+        );
+
+        const slot = slotMap.get(slotKey) || { key: slotKey, sampleSize: 0, qualityTotal: 0 };
+        slot.sampleSize += 1;
+        slot.qualityTotal += quality;
+        slotMap.set(slotKey, slot);
+    });
+
+    const slots = Array.from(slotMap.values())
+        .map((slot) => ({
+            key: slot.key,
+            sampleSize: slot.sampleSize,
+            score: Math.round(slot.qualityTotal / slot.sampleSize)
+        }))
+        .sort((a, b) => b.score - a.score);
+
+    const bestSlot = slots[0] || null;
+    const avoidSlot = slots.slice().sort((a, b) => a.score - b.score)[0] || null;
+
+    return {
+        slots,
+        totalReports: reports.length,
+        bestSlotKey: bestSlot ? bestSlot.key : null,
+        avoidSlotKey: avoidSlot ? avoidSlot.key : null
+    };
+}
+
 async function recomputeCafeMetrics(supabase, cafeId) {
     const { data: reports, error: reportsError } = await supabase
         .from('cafe_reports')
-        .select('wifi_mbps, plugs, noise, submitted_at')
+        .select('wifi_mbps, plugs, noise, observed_at, submitted_at')
         .eq('cafe_id', cafeId)
         .eq('status', 'approved')
-        .order('submitted_at', { ascending: false });
+        .order('observed_at', { ascending: false });
 
     if (reportsError) {
         throw reportsError;
@@ -128,6 +202,7 @@ async function recomputeCafeMetrics(supabase, cafeId) {
 
     const fallbackSeed = seedCafes.find((seed) => seed.id === cafe.external_seed_id);
     const approvedReports = reports || [];
+    const forecastSummary = buildForecastSummary(approvedReports);
 
     const wifi = average(approvedReports.map((report) => report.wifi_mbps).filter((value) => Number.isFinite(value)));
     const latestApproved = approvedReports[0];
@@ -141,7 +216,8 @@ async function recomputeCafeMetrics(supabase, cafeId) {
         current_noise: noise,
         report_count: approvedReports.length,
         confidence_score: approvedReports.length ? confidenceScore : 18,
-        last_verified_at: latestApproved ? latestApproved.submitted_at : null
+        forecast_summary: forecastSummary,
+        last_verified_at: latestApproved ? (latestApproved.observed_at || latestApproved.submitted_at) : null
     };
 
     const { error: updateError } = await supabase

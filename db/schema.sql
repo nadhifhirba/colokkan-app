@@ -17,6 +17,7 @@ create table if not exists cafes (
   current_wifi_mbps integer,
   current_plugs text,
   current_noise text,
+  forecast_summary jsonb not null default '{}'::jsonb,
   last_verified_at timestamptz,
   report_count integer not null default 0,
   confidence_score integer not null default 0 check (confidence_score between 0 and 100),
@@ -35,6 +36,7 @@ create table if not exists cafe_reports (
   plugs text not null,
   noise text not null,
   notes text,
+  observed_at timestamptz not null default now(),
   screenshot_path text,
   screenshot_content_type text,
   status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
@@ -44,7 +46,7 @@ create table if not exists cafe_reports (
   submitted_at timestamptz not null default now()
 );
 
-create index if not exists cafe_reports_cafe_idx on cafe_reports (cafe_id, status, submitted_at desc);
+create index if not exists cafe_reports_cafe_idx on cafe_reports (cafe_id, status, observed_at desc);
 create index if not exists cafe_reports_status_idx on cafe_reports (status, submitted_at asc);
 
 create table if not exists cafe_review_events (

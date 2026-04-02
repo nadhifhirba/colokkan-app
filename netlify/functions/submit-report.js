@@ -24,6 +24,7 @@ exports.handler = async function handler(event) {
         const noise = String(payload.noise || '').trim();
         const notes = String(payload.notes || '').trim().slice(0, 500);
         const reporterName = String(payload.reporterName || 'Anon').trim().slice(0, 80) || 'Anon';
+        const observedAt = payload.observedAt ? new Date(payload.observedAt) : new Date();
 
         if (!cafeId) {
             return json(400, { error: 'Spot wajib dipilih' });
@@ -36,6 +37,9 @@ exports.handler = async function handler(event) {
         }
         if (!noise) {
             return json(400, { error: 'Tingkat noise wajib dipilih' });
+        }
+        if (Number.isNaN(observedAt.getTime())) {
+            return json(400, { error: 'Waktu observasi tidak valid' });
         }
 
         const supabase = getSupabaseAdmin();
@@ -61,6 +65,7 @@ exports.handler = async function handler(event) {
                 plugs,
                 noise,
                 notes,
+                observed_at: observedAt.toISOString(),
                 screenshot_path: screenshotMeta?.path || null,
                 screenshot_content_type: screenshotMeta?.contentType || null,
                 status: 'pending'

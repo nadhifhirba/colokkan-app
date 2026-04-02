@@ -180,6 +180,25 @@
                         <li>• Belum ada laporan yang lolos review.</li>
                     </ul>
                 </div>
+
+                <div class="card">
+                    <h2 id="detail-forecast-label">Forecast kerja</h2>
+                    <div class="trust-strip">
+                        <div class="trust-pill">
+                            <span class="section-label" id="forecast-best-label">Best time</span>
+                            <strong id="detail-forecast-best">Belum cukup data</strong>
+                        </div>
+                        <div class="trust-pill">
+                            <span class="section-label" id="forecast-avoid-label">Risky time</span>
+                            <strong id="detail-forecast-avoid">Belum cukup data</strong>
+                        </div>
+                        <div class="trust-pill">
+                            <span class="section-label" id="forecast-now-label">Right now</span>
+                            <strong id="detail-forecast-now">Seed only</strong>
+                        </div>
+                    </div>
+                    <p id="detail-forecast-copy" class="best-match-copy">Forecast akan makin tajam setelah laporan approved menyebar di jam yang berbeda.</p>
+                </div>
             </div>
 
             <!-- View D: Contribute (Hidden by default) -->
@@ -205,6 +224,11 @@
                         <div style="margin-bottom: 20px;">
                             <label id="contribute-wifi-label" style="display:block; font-weight:700; margin-bottom:8px;">Hasil speedtest (Mbps)</label>
                             <input type="number" class="search-input" style="width:100%;" id="contribute-wifi" min="1" max="2000" placeholder="Contoh: 68">
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label id="contribute-observed-at-label" style="display:block; font-weight:700; margin-bottom:8px;">Waktu kondisi ini kamu lihat</label>
+                            <input type="datetime-local" class="search-input" style="width:100%;" id="contribute-observed-at">
                         </div>
 
                         <div style="margin-bottom: 20px;">

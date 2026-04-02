@@ -18,6 +18,7 @@ function seedFallback() {
         noise: cafe.noise,
         confidenceScore: 18,
         reportCount: 0,
+        forecastSummary: {},
         lastVerifiedAt: null,
         source: 'seed'
     }));
@@ -42,6 +43,7 @@ exports.handler = async function handler() {
                 current_wifi_mbps,
                 current_plugs,
                 current_noise,
+                forecast_summary,
                 confidence_score,
                 report_count,
                 last_verified_at,

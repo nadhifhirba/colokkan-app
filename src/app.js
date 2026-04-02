@@ -34,6 +34,17 @@ const TRANSLATIONS = {
         detailOpenMaps: 'Buka di Maps',
         detailVibe: 'Vibe interior',
         detailVerification: 'Verifikasi komunitas',
+        detailForecast: 'Forecast kerja',
+        forecastBestLabel: 'Best time',
+        forecastAvoidLabel: 'Risky time',
+        forecastNowLabel: 'Right now',
+        forecastNeedsData: 'Belum cukup data',
+        forecastSeedOnly: 'Seed only',
+        forecastGood: 'Aman buat kerja',
+        forecastMixed: 'Masih oke, tapi mixed',
+        forecastRisky: 'Rawan ganggu fokus',
+        forecastCopy: 'Forecast akan makin tajam setelah laporan approved menyebar di jam yang berbeda.',
+        forecastReportsTail: '{count} laporan approved.',
         freshness: 'Freshness',
         confidence: 'Confidence',
         approvedReports: 'Approved reports',
@@ -42,6 +53,7 @@ const TRANSLATIONS = {
         contributeCafe: 'Pilih spot',
         contributeReporter: 'Nama pelapor',
         contributeWifi: 'Hasil speedtest (Mbps)',
+        contributeObservedAt: 'Waktu kondisi ini kamu lihat',
         contributeScreenshot: 'Upload screenshot speedtest',
         contributePlugs: 'Ketersediaan colokan',
         contributeNoise: 'Tingkat noise',
@@ -77,6 +89,14 @@ const TRANSLATIONS = {
         east: 'TIMUR',
         north: 'UTARA',
         south: 'SELATAN',
+        slot_weekday_morning: 'weekday pagi',
+        slot_weekday_lunch: 'weekday siang',
+        slot_weekday_afternoon: 'weekday sore',
+        slot_weekday_evening: 'weekday malam',
+        slot_weekend_morning: 'weekend pagi',
+        slot_weekend_lunch: 'weekend siang',
+        slot_weekend_afternoon: 'weekend sore',
+        slot_weekend_evening: 'weekend malam',
         listAria: 'Daftar spot kerja',
         areaAria: 'Ringkasan kawasan',
         chooseCafeFirst: 'Pilih spot dulu. Kalau enggak, reviewer bingung mau nilai yang mana.',
@@ -134,6 +154,17 @@ const TRANSLATIONS = {
         detailOpenMaps: 'Open in Maps',
         detailVibe: 'Interior vibe',
         detailVerification: 'Community verification',
+        detailForecast: 'Work forecast',
+        forecastBestLabel: 'Best time',
+        forecastAvoidLabel: 'Risky time',
+        forecastNowLabel: 'Right now',
+        forecastNeedsData: 'Not enough data yet',
+        forecastSeedOnly: 'Seed only',
+        forecastGood: 'Safe for work',
+        forecastMixed: 'Usable but mixed',
+        forecastRisky: 'Risky for focus',
+        forecastCopy: 'This forecast gets sharper once approved reports spread across different time windows.',
+        forecastReportsTail: '{count} approved reports.',
         freshness: 'Freshness',
         confidence: 'Confidence',
         approvedReports: 'Approved reports',
@@ -142,6 +173,7 @@ const TRANSLATIONS = {
         contributeCafe: 'Pick a spot',
         contributeReporter: 'Reporter name',
         contributeWifi: 'Speedtest result (Mbps)',
+        contributeObservedAt: 'When did you observe this?',
         contributeScreenshot: 'Upload speedtest screenshot',
         contributePlugs: 'Outlet availability',
         contributeNoise: 'Noise level',
@@ -177,6 +209,14 @@ const TRANSLATIONS = {
         east: 'EAST',
         north: 'NORTH',
         south: 'SOUTH',
+        slot_weekday_morning: 'weekday morning',
+        slot_weekday_lunch: 'weekday lunch',
+        slot_weekday_afternoon: 'weekday afternoon',
+        slot_weekday_evening: 'weekday evening',
+        slot_weekend_morning: 'weekend morning',
+        slot_weekend_lunch: 'weekend lunch',
+        slot_weekend_afternoon: 'weekend afternoon',
+        slot_weekend_evening: 'weekend evening',
         listAria: 'List of work spots',
         areaAria: 'Area summary',
         chooseCafeFirst: 'Pick a spot first, otherwise the reviewer has no idea what you are reporting.',
@@ -237,6 +277,7 @@ const seedCafes = (window.SEED_CAFES || []).map((cafe) => ({
     address: cafe.address,
     confidenceScore: 18,
     reportCount: 0,
+    forecastSummary: {},
     lastVerifiedAt: null,
     source: 'seed'
 }));
@@ -309,10 +350,15 @@ function applyLanguageToShell() {
         ['detail-map-link', t('detailOpenMaps')],
         ['detail-vibe-label', t('detailVibe')],
         ['detail-verification-label', t('detailVerification')],
+        ['detail-forecast-label', t('detailForecast')],
+        ['forecast-best-label', t('forecastBestLabel')],
+        ['forecast-avoid-label', t('forecastAvoidLabel')],
+        ['forecast-now-label', t('forecastNowLabel')],
         ['contribute-title', t('contributeTitle')],
         ['contribute-cafe-label', t('contributeCafe')],
         ['contribute-reporter-label', t('contributeReporter')],
         ['contribute-wifi-label', t('contributeWifi')],
+        ['contribute-observed-at-label', t('contributeObservedAt')],
         ['contribute-screenshot-label', t('contributeScreenshot')],
         ['contribute-plugs-label', t('contributePlugs')],
         ['contribute-noise-label', t('contributeNoise')],
@@ -333,6 +379,8 @@ function applyLanguageToShell() {
 
     const adminCopyNode = document.querySelector('#admin-mode-title + p');
     if (adminCopyNode) adminCopyNode.textContent = t('adminModeCopy');
+    const forecastCopyNode = document.getElementById('detail-forecast-copy');
+    if (forecastCopyNode) forecastCopyNode.textContent = t('forecastCopy');
 
     document.getElementById('lang-id-btn')?.classList.toggle('active', currentLanguage === 'id');
     document.getElementById('lang-en-btn')?.classList.toggle('active', currentLanguage === 'en');
@@ -359,6 +407,89 @@ function getModeLabel(modeKey) {
     if (modeKey === 'meeting') return t('modeMeeting');
     if (modeKey === 'vibe') return t('modeVibe');
     return t('modeAll');
+}
+
+function getSlotLabel(slotKey) {
+    if (!slotKey) return t('forecastNeedsData');
+    return t(`slot_${slotKey}`);
+}
+
+function getCurrentForecastSlotKey(date = new Date()) {
+    const weekdayType = date.getDay() === 0 || date.getDay() === 6 ? 'weekend' : 'weekday';
+    const hour = date.getHours();
+    if (hour < 10) return `${weekdayType}_morning`;
+    if (hour < 14) return `${weekdayType}_lunch`;
+    if (hour < 17) return `${weekdayType}_afternoon`;
+    return `${weekdayType}_evening`;
+}
+
+function getCurrentForecastSignal(cafe) {
+    const summary = cafe.forecastSummary || {};
+    const slots = Array.isArray(summary.slots) ? summary.slots : [];
+    if (!slots.length) {
+        return {
+            text: t('forecastSeedOnly'),
+            tone: 'seed'
+        };
+    }
+
+    const slotKey = getCurrentForecastSlotKey();
+    const slot = slots.find((entry) => entry.key === slotKey);
+    if (!slot) {
+        return {
+            text: `${getSlotLabel(slotKey)} · ${t('forecastNeedsData')}`,
+            tone: 'seed'
+        };
+    }
+
+    const sentiment = slot.score >= 78 ? t('forecastGood') : slot.score >= 60 ? t('forecastMixed') : t('forecastRisky');
+    return {
+        text: `${getSlotLabel(slotKey)} · ${sentiment}`,
+        tone: slot.score >= 78 ? 'good' : slot.score >= 60 ? 'mixed' : 'risky'
+    };
+}
+
+function getForecastBoost(cafe) {
+    const summary = cafe.forecastSummary || {};
+    const slots = Array.isArray(summary.slots) ? summary.slots : [];
+    if (!slots.length) return 60;
+
+    const slotKey = getCurrentForecastSlotKey();
+    const slot = slots.find((entry) => entry.key === slotKey);
+    return slot ? slot.score : 60;
+}
+
+function renderForecastDetails(cafe) {
+    const summary = cafe.forecastSummary || {};
+    const slots = Array.isArray(summary.slots) ? summary.slots : [];
+    const bestNode = document.getElementById('detail-forecast-best');
+    const avoidNode = document.getElementById('detail-forecast-avoid');
+    const nowNode = document.getElementById('detail-forecast-now');
+    const copyNode = document.getElementById('detail-forecast-copy');
+
+    if (!bestNode || !avoidNode || !nowNode || !copyNode) return;
+
+    if (!slots.length) {
+        bestNode.textContent = t('forecastNeedsData');
+        avoidNode.textContent = t('forecastNeedsData');
+        nowNode.textContent = t('forecastSeedOnly');
+        copyNode.textContent = t('forecastCopy');
+        return;
+    }
+
+    const bestSlot = slots.find((slot) => slot.key === summary.bestSlotKey) || slots[0];
+    const avoidSlot = slots.find((slot) => slot.key === summary.avoidSlotKey) || slots[slots.length - 1];
+    const currentSignal = getCurrentForecastSignal(cafe);
+
+    bestNode.textContent = `${getSlotLabel(bestSlot.key)} · ${bestSlot.score}/100`;
+    avoidNode.textContent = `${getSlotLabel(avoidSlot.key)} · ${avoidSlot.score}/100`;
+    nowNode.textContent = currentSignal.text;
+    copyNode.textContent = `${t('forecastCopy')} ${summary.totalReports || slots.reduce((sum, slot) => sum + (slot.sampleSize || 0), 0)} approved reports.`;
+}
+
+function getLocalDateTimeValue(date = new Date()) {
+    const offsetDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return offsetDate.toISOString().slice(0, 16);
 }
 
 function scorePlugs(cafe) {
@@ -437,7 +568,8 @@ function getCompositeScore(cafe) {
     const fitScore = getFitScore(cafe);
     const confidenceScore = Math.max(0, Math.min(100, Number(cafe.confidenceScore) || 0));
     const freshnessScore = getFreshnessScore(cafe);
-    return Math.round((fitScore * 0.7) + (confidenceScore * 0.2) + (freshnessScore * 0.1));
+    const forecastScore = getForecastBoost(cafe);
+    return Math.round((fitScore * 0.62) + (confidenceScore * 0.18) + (freshnessScore * 0.1) + (forecastScore * 0.1));
 }
 
 function matchesSpotFilters(cafe) {
@@ -964,6 +1096,45 @@ function buildVerificationItems(cafe) {
     return items;
 }
 
+function renderForecastCard(cafe) {
+    const summary = cafe.forecastSummary || {};
+    const slots = Array.isArray(summary.slots) ? summary.slots : [];
+    const bestNode = document.getElementById('detail-forecast-best');
+    const avoidNode = document.getElementById('detail-forecast-avoid');
+    const nowNode = document.getElementById('detail-forecast-now');
+    const copyNode = document.getElementById('detail-forecast-copy');
+
+    if (!bestNode || !avoidNode || !nowNode || !copyNode) return;
+
+    if (!slots.length) {
+        bestNode.textContent = t('forecastNeedsData');
+        avoidNode.textContent = t('forecastNeedsData');
+        nowNode.textContent = t('forecastSeedOnly');
+        copyNode.textContent = t('forecastCopy');
+        return;
+    }
+
+    const bestSlot = slots.find((slot) => slot.key === summary.bestSlotKey) || slots[0];
+    const avoidSlot = slots.find((slot) => slot.key === summary.avoidSlotKey) || slots[slots.length - 1];
+    const currentSlotKey = getCurrentForecastSlotKey();
+    const currentSlot = slots.find((slot) => slot.key === currentSlotKey);
+
+    bestNode.textContent = `${getSlotLabel(bestSlot.key)} · ${bestSlot.score}/100`;
+    avoidNode.textContent = `${getSlotLabel(avoidSlot.key)} · ${avoidSlot.score}/100`;
+    if (!currentSlot) {
+        nowNode.textContent = `${getSlotLabel(currentSlotKey)} · ${t('forecastNeedsData')}`;
+    } else if (currentSlot.score >= 78) {
+        nowNode.textContent = `${getSlotLabel(currentSlot.key)} · ${t('forecastGood')}`;
+    } else if (currentSlot.score >= 60) {
+        nowNode.textContent = `${getSlotLabel(currentSlot.key)} · ${t('forecastMixed')}`;
+    } else {
+        nowNode.textContent = `${getSlotLabel(currentSlot.key)} · ${t('forecastRisky')}`;
+    }
+
+    const totalReports = summary.totalReports || slots.reduce((sum, slot) => sum + (slot.sampleSize || 0), 0);
+    copyNode.textContent = `${t('forecastCopy')} ${t('forecastReportsTail', { count: totalReports })}`;
+}
+
 function showDetail(cafeId) {
     const cafe = Cafes.find((item) => item.id === cafeId);
     if (!cafe) return;
@@ -983,6 +1154,7 @@ function showDetail(cafeId) {
     document.getElementById('detail-confidence').textContent = `${cafe.confidenceScore || 0}/100`;
     document.getElementById('detail-report-count').textContent = String(cafe.reportCount || 0);
     document.getElementById('verification-list').innerHTML = buildVerificationItems(cafe).map((item) => `<li>${item}</li>`).join('');
+    renderForecastCard(cafe);
 }
 
 function applyFilters() {
@@ -1024,6 +1196,8 @@ async function handleFileUpload(input) {
 function resetContributionForm() {
     const form = document.getElementById('contribute-form');
     form.reset();
+    const observedAtInput = document.getElementById('contribute-observed-at');
+    if (observedAtInput) observedAtInput.value = getLocalDateTimeValue();
     selectedScreenshotDataUrl = '';
     const uploadStatus = document.getElementById('upload-status');
     uploadStatus.textContent = UPLOAD_IDLE_TEXT;
@@ -1038,6 +1212,7 @@ async function handleFormSubmit(event) {
         cafeId: document.getElementById('contribute-cafe-select').value,
         reporterName: document.getElementById('reporter-name').value.trim(),
         wifiMbps: document.getElementById('contribute-wifi').value,
+        observedAt: document.getElementById('contribute-observed-at').value,
         plugs: document.getElementById('contribute-plugs').value,
         noise: document.getElementById('contribute-noise').value,
         notes: document.getElementById('contribute-notes').value.trim(),
@@ -1216,6 +1391,11 @@ if (searchInput) {
         searchQuery = event.target.value.toLowerCase();
         renderList();
     });
+}
+
+const observedAtInput = document.getElementById('contribute-observed-at');
+if (observedAtInput && !observedAtInput.value) {
+    observedAtInput.value = getLocalDateTimeValue();
 }
 
 applyLanguageToShell();
