@@ -16,6 +16,21 @@ const TRANSLATIONS = {
         modeVibe: 'Ngopi santai',
         modeAll: 'Semua',
         bestMatchLabel: 'Pilihan terbaik sekarang',
+        goNowLabel: 'Go now',
+        goNowTitle: 'Mencari spot terbaik buat sekarang...',
+        goNowMeta: 'Forecast, confidence, dan mode kerja akan dipadukan di sini.',
+        goNowCopy: 'Nyalakan lokasi supaya ranking ini bisa mempertimbangkan jarak tempuh juga.',
+        goNowScore: 'Skor berangkat',
+        goNowOpen: 'Lihat spot',
+        goNowUseLocation: 'Pakai lokasi',
+        goNowNoResult: 'Belum ada spot yang layak buat sekarang',
+        goNowNoResultMeta: 'Coba ganti mode atau longgarkan filter.',
+        goNowDistanceKm: '{distance} km',
+        goNowEta: '{minutes} min jalan',
+        goNowTravelUnknown: 'jarak belum dihitung',
+        goNowUseLocationBusy: 'Mengambil lokasi...',
+        goNowUseLocationDenied: 'Lokasi ditolak. Ranking balik ke mode + forecast saja.',
+        goNowUseLocationReady: 'Lokasi aktif. Go Now sekarang mempertimbangkan jarak.',
         openRecommendation: 'Buka rekomendasi',
         matchScore: 'Skor kecocokan',
         mapEyebrow: 'Map mode',
@@ -136,6 +151,21 @@ const TRANSLATIONS = {
         modeVibe: 'Coffee vibe',
         modeAll: 'All',
         bestMatchLabel: 'Best match right now',
+        goNowLabel: 'Go now',
+        goNowTitle: 'Finding the best spot for right now...',
+        goNowMeta: 'Forecast, confidence, and work mode will be combined here.',
+        goNowCopy: 'Turn on location so this ranking can factor in travel time too.',
+        goNowScore: 'Departure score',
+        goNowOpen: 'View spot',
+        goNowUseLocation: 'Use location',
+        goNowNoResult: 'No strong spot for right now',
+        goNowNoResultMeta: 'Try another mode or loosen the filters.',
+        goNowDistanceKm: '{distance} km',
+        goNowEta: '{minutes} min away',
+        goNowTravelUnknown: 'distance not calculated yet',
+        goNowUseLocationBusy: 'Getting location...',
+        goNowUseLocationDenied: 'Location denied. Ranking is back to mode + forecast only.',
+        goNowUseLocationReady: 'Location active. Go Now is now factoring travel distance.',
         openRecommendation: 'Open recommendation',
         matchScore: 'Match score',
         mapEyebrow: 'Map mode',
@@ -303,6 +333,8 @@ let activeFilters = {
 let adminToken = localStorage.getItem('colokkan_admin_token') || '';
 let adminQueue = [];
 let currentLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'id';
+let userLocation = null;
+let goNowCafe = null;
 
 function t(key, vars = {}) {
     const table = TRANSLATIONS[currentLanguage] || TRANSLATIONS.id;
@@ -340,8 +372,12 @@ function applyLanguageToShell() {
         ['mode-vibe-btn', t('modeVibe')],
         ['mode-all-btn', t('modeAll')],
         ['best-match-label', t('bestMatchLabel')],
+        ['go-now-label', t('goNowLabel')],
         ['best-match-action', t('openRecommendation')],
+        ['go-now-action', t('goNowOpen')],
+        ['go-now-location-btn', t('goNowUseLocation')],
         ['best-match-score-label', t('matchScore')],
+        ['go-now-score-label', t('goNowScore')],
         ['map-shell-eyebrow', t('mapEyebrow')],
         ['map-shell-title', t('mapTitle')],
         ['detail-back-btn', t('detailBack')],
@@ -396,6 +432,7 @@ function setLanguage(language) {
     }
     renderProfileSummary();
     renderAdminQueue();
+    renderGoNowCard();
 }
 
 function normalizeText(value) {
@@ -412,6 +449,19 @@ function getModeLabel(modeKey) {
 function getSlotLabel(slotKey) {
     if (!slotKey) return t('forecastNeedsData');
     return t(`slot_${slotKey}`);
+}
+
+function haversineKm(from, to) {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const earthRadiusKm = 6371;
+    const dLat = toRad(to.lat - from.lat);
+    const dLng = toRad(to.lng - from.lng);
+    const lat1 = toRad(from.lat);
+    const lat2 = toRad(to.lat);
+
+    const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    return earthRadiusKm * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
 function getCurrentForecastSlotKey(date = new Date()) {
@@ -459,32 +509,53 @@ function getForecastBoost(cafe) {
     return slot ? slot.score : 60;
 }
 
-function renderForecastDetails(cafe) {
-    const summary = cafe.forecastSummary || {};
-    const slots = Array.isArray(summary.slots) ? summary.slots : [];
-    const bestNode = document.getElementById('detail-forecast-best');
-    const avoidNode = document.getElementById('detail-forecast-avoid');
-    const nowNode = document.getElementById('detail-forecast-now');
-    const copyNode = document.getElementById('detail-forecast-copy');
+function getGoNowCandidates() {
+    return getFilteredCafes().map((cafe) => {
+        const distanceKm = userLocation
+            ? haversineKm(userLocation, { lat: Number(cafe.lat), lng: Number(cafe.lng) })
+            : null;
+        const travelPenalty = distanceKm === null ? 0 : Math.min(24, distanceKm * 4.5);
+        const goNowScore = Math.round(cafe.score - travelPenalty);
+        return {
+            ...cafe,
+            distanceKm,
+            goNowScore
+        };
+    }).sort((a, b) => b.goNowScore - a.goNowScore);
+}
 
-    if (!bestNode || !avoidNode || !nowNode || !copyNode) return;
+function renderGoNowCard() {
+    const nameNode = document.getElementById('go-now-name');
+    const metaNode = document.getElementById('go-now-meta');
+    const copyNode = document.getElementById('go-now-copy');
+    const scoreNode = document.getElementById('go-now-score');
+    const actionNode = document.getElementById('go-now-action');
+    const locationNode = document.getElementById('go-now-location-btn');
+    if (!nameNode || !metaNode || !copyNode || !scoreNode || !actionNode || !locationNode) return;
 
-    if (!slots.length) {
-        bestNode.textContent = t('forecastNeedsData');
-        avoidNode.textContent = t('forecastNeedsData');
-        nowNode.textContent = t('forecastSeedOnly');
-        copyNode.textContent = t('forecastCopy');
+    const candidates = getGoNowCandidates();
+    goNowCafe = candidates[0] || null;
+
+    locationNode.textContent = t('goNowUseLocation');
+
+    if (!goNowCafe) {
+        nameNode.textContent = t('goNowNoResult');
+        metaNode.textContent = t('goNowNoResultMeta');
+        copyNode.textContent = t('goNowCopy');
+        scoreNode.textContent = '--';
+        actionNode.disabled = true;
         return;
     }
 
-    const bestSlot = slots.find((slot) => slot.key === summary.bestSlotKey) || slots[0];
-    const avoidSlot = slots.find((slot) => slot.key === summary.avoidSlotKey) || slots[slots.length - 1];
-    const currentSignal = getCurrentForecastSignal(cafe);
+    const travelText = goNowCafe.distanceKm === null
+        ? t('goNowTravelUnknown')
+        : `${t('goNowDistanceKm', { distance: goNowCafe.distanceKm.toFixed(1) })} · ${t('goNowEta', { minutes: Math.max(4, Math.round(goNowCafe.distanceKm * 6)) })}`;
 
-    bestNode.textContent = `${getSlotLabel(bestSlot.key)} · ${bestSlot.score}/100`;
-    avoidNode.textContent = `${getSlotLabel(avoidSlot.key)} · ${avoidSlot.score}/100`;
-    nowNode.textContent = currentSignal.text;
-    copyNode.textContent = `${t('forecastCopy')} ${summary.totalReports || slots.reduce((sum, slot) => sum + (slot.sampleSize || 0), 0)} approved reports.`;
+    nameNode.textContent = goNowCafe.name;
+    metaNode.textContent = `${getModeLabel(currentMode)} · ${travelText}`;
+    copyNode.textContent = `${goNowCafe.freshnessLabel} · confidence ${goNowCafe.confidenceScore || 0}/100 · forecast ${getForecastBoost(goNowCafe)}/100.`;
+    scoreNode.textContent = String(goNowCafe.goNowScore);
+    actionNode.disabled = false;
 }
 
 function getLocalDateTimeValue(date = new Date()) {
@@ -976,6 +1047,7 @@ function renderList() {
 
     const filteredCafes = getFilteredCafes();
     updateBestMatchCard(filteredCafes);
+    renderGoNowCard();
     renderAreaGrid();
     if (currentTab === 'map') {
         updateMapExperience();
@@ -1083,6 +1155,41 @@ function openBestMatch() {
     if (bestMatchCafe) {
         showDetail(bestMatchCafe.id);
     }
+}
+
+function openGoNowSpot() {
+    if (goNowCafe) {
+        showDetail(goNowCafe.id);
+    }
+}
+
+function requestUserLocation() {
+    const locationNode = document.getElementById('go-now-location-btn');
+    if (!navigator.geolocation) {
+        const copyNode = document.getElementById('go-now-copy');
+        if (copyNode) copyNode.textContent = t('goNowUseLocationDenied');
+        return;
+    }
+
+    if (locationNode) locationNode.textContent = t('goNowUseLocationBusy');
+    navigator.geolocation.getCurrentPosition((position) => {
+        userLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+        };
+        const copyNode = document.getElementById('go-now-copy');
+        if (copyNode) copyNode.textContent = t('goNowUseLocationReady');
+        renderGoNowCard();
+    }, () => {
+        if (locationNode) locationNode.textContent = t('goNowUseLocation');
+        const copyNode = document.getElementById('go-now-copy');
+        if (copyNode) copyNode.textContent = t('goNowUseLocationDenied');
+        renderGoNowCard();
+    }, {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 120000
+    });
 }
 
 function buildVerificationItems(cafe) {
@@ -1409,7 +1516,9 @@ window.applyFilters = applyFilters;
 window.handleFileUpload = handleFileUpload;
 window.handleFormSubmit = handleFormSubmit;
 window.openBestMatch = openBestMatch;
+window.openGoNowSpot = openGoNowSpot;
 window.openAdminMode = openAdminMode;
+window.requestUserLocation = requestUserLocation;
 window.reviewReport = reviewReport;
 window.setLanguage = setLanguage;
 window.setWorkMode = setWorkMode;

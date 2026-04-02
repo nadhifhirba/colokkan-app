@@ -93,6 +93,23 @@
                             <span id="best-match-score-label">Skor kecocokan</span>
                         </div>
                     </div>
+
+                    <div class="go-now-card">
+                        <div>
+                            <span class="section-label" id="go-now-label">Go now</span>
+                            <h2 class="best-match-title" id="go-now-name">Mencari spot terbaik buat sekarang...</h2>
+                            <p class="best-match-copy" id="go-now-meta">Forecast, confidence, dan mode kerja akan dipadukan di sini.</p>
+                            <p class="best-match-copy" id="go-now-copy">Nyalakan lokasi supaya ranking ini bisa mempertimbangkan jarak tempuh juga.</p>
+                            <div class="go-now-actions">
+                                <button class="btn btn-primary" id="go-now-action" type="button" onclick="openGoNowSpot()">Lihat spot</button>
+                                <button class="btn" id="go-now-location-btn" type="button" onclick="requestUserLocation()">Pakai lokasi</button>
+                            </div>
+                        </div>
+                        <div class="best-match-score" aria-live="polite">
+                            <strong id="go-now-score">--</strong>
+                            <span id="go-now-score-label">Skor berangkat</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="map-tab" class="tab-content tab-content--map">

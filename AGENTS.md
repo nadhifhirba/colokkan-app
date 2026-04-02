@@ -1,7 +1,7 @@
 # AGENTS.md — co.lok.kan
 
 Agent Readiness Level: L5
-Last Updated: 2026-03-21
+Last Updated: 2026-04-02
 
 ---
 
@@ -18,10 +18,11 @@ Last Updated: 2026-03-21
 | Layer | Tech |
 |-------|------|
 | Frontend | Vanilla HTML/CSS/JavaScript (no framework) |
-| Maps | Google Maps JavaScript API + Places API |
+| Maps | Google Maps JavaScript API (render only) + local SVG radar fallback |
 | Styling | Custom CSS (brutalist design system, JetBrains Mono) |
 | PWA | Web App Manifest + Service Worker |
 | Hosting | Netlify |
+| Backend | Netlify Functions + Supabase-ready schema |
 | Version Control | GitHub (`nadhifhirba/colokkan-app`) |
 
 ---
@@ -39,11 +40,12 @@ python3 -m http.server 8080
 npx serve .
 # Then open: http://localhost:3000
 
-# Option 3: VS Code Live Server extension
-# Right-click index.html → Open with Live Server
+# Option 3: Netlify Functions + map config
+npx netlify dev --port 8888
+# Then open: http://127.0.0.1:8888/index.html
 ```
 
-> Note: Google Maps API requires a live domain or localhost to function. The API key in `index.html` is a browser-restricted key for development.
+> Note: Google Maps now loads via `public-config` and `GOOGLE_MAPS_BROWSER_KEY`, not a hardcoded client key in `index.html`.
 
 ---
 
@@ -55,6 +57,9 @@ colokkan-app/
 ├── manifest.json       # PWA manifest (icons, theme, display mode)
 ├── sw.js               # Service worker — caches core assets for offline
 ├── netlify.toml        # Netlify config: security headers, caching rules
+├── netlify/functions/  # Public config + report/moderation endpoints
+├── shared/             # Shared seed cafe data
+├── db/schema.sql       # Supabase schema for cafes, reports, and review events
 ├── robots.txt          # SEO: allow all crawlers
 ├── sitemap.xml         # SEO: single-URL sitemap
 ├── icon-192.png        # PWA icon (192×192)
@@ -81,11 +86,11 @@ The entire app is a single HTML file with multiple view sections toggled via JS:
 
 ### `src/app.js`
 All application logic in one file:
-- `Cafes[]` — static seed data (12 real Jakarta cafes with factual coordinates)
-- `initMap()` — initialises Google Maps, fetches live Places API data
-- `fetchNearbyCafes()` — pulls nearby cafes from Places API, updates `Cafes[]`
-- `renderList()` / `renderMarkers()` — re-renders UI based on current filters + search
-- `handleFormSubmit()` — validates and submits a speed report (with Indonesian error messages)
+- `seedCafes` — shared seed data for the fallback path
+- `renderList()` / `renderAreaGrid()` / `updateMapExperience()` — re-render ranking, area view, and map/radar
+- `renderGoNowCard()` — current-time recommendation layer using mode, confidence, forecast, and optional distance
+- `renderForecastCard()` — time-aware forecast detail derived from approved reports
+- `handleFormSubmit()` — validates and submits a community report, including observed time
 - Navigation functions: `showRadar()`, `showContribute()`, `showProfile()`, `showDetail()`
 
 ### `src/styles/global.css`
@@ -104,35 +109,18 @@ Sets security headers on all routes: `X-Frame-Options`, `X-Content-Type-Options`
 
 ## How to Add a New Coworking Space
 
-Edit the `Cafes` array in `/Users/malka/colokkan-app/src/app.js`:
-
-```js
-{
-    id: "factual_13",           // Unique ID, increment factual_N
-    name: "Your Cafe Name",     // Full display name
-    lat: -6.2200,               // Latitude (use Google Maps to get coords)
-    lng: 106.8300,              // Longitude
-    neighborhood: "Menteng",    // Jakarta neighborhood/area name
-    wifi: 60,                   // Estimated WiFi speed in Mbps
-    plugs: "Plenty at tables",  // Description of outlet availability
-    noise: "Quiet",             // Noise level description
-    rating: 4.5,                // Google Maps rating (0–5)
-    address: "Jl. Example No. 1, Menteng"  // Full street address
-}
-```
-
-The new entry will automatically appear in the List view and on the Map.
+Add it to `/Users/malka/colokkan-app/shared/seed-cafes.js` for the seed fallback path, then sync into Supabase via `get-cafes`.
 
 ---
 
 ## Known Limitations
 
-1. **WiFi data is mocked** — speeds are randomly generated when loaded from the Places API. Community verification flow is UI-complete but not yet persisted to a backend.
-2. **No auth/backend** — profile data is hardcoded. Reports are not stored anywhere.
-3. **Google Maps API key exposed in HTML** — it's a browser-restricted key, but should eventually move to a Netlify environment variable and be served via a backend proxy.
-4. **OCR is simulated** — the speedtest screenshot upload UI exists but the "62 Mbps detected" response is a setTimeout mock, not real OCR.
-5. **Single-city scope** — currently only covers Jakarta (South + Central + North + West).
-6. **No offline map tiles** — the service worker caches the app shell but not Google Maps tiles.
+1. **Supabase not wired live in every environment yet** — the local app still falls back to seed data unless the function env vars are set.
+2. **Admin review auth is token-based in v1** — not full user/admin auth yet.
+3. **OCR is still simulated** — screenshot upload is persisted, but no extraction pipeline is running.
+4. **Forecast quality depends on approved data density** — the model is real, but early slots will be sparse.
+5. **Single-city scope** — currently focused on Jakarta.
+6. **No offline map tiles** — the service worker caches the app shell, not Google Maps tiles.
 
 ---
 

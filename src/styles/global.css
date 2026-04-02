@@ -400,6 +400,23 @@ a:hover {
     border-top: 2px solid rgba(56, 56, 56, 0.18);
 }
 
+.go-now-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 2px solid rgba(56, 56, 56, 0.18);
+}
+
+.go-now-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
 .best-match-title {
     font-size: 20px;
     margin-bottom: 4px;
@@ -657,6 +674,10 @@ a:hover {
     }
 
     .best-match {
+        grid-template-columns: 1fr;
+    }
+
+    .go-now-card {
         grid-template-columns: 1fr;
     }
 

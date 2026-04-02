@@ -4,12 +4,14 @@ Project context for Claude Code and other AI agents.
 
 ## What This Is
 
-co.lok.kan is a Vanilla JS PWA for finding work-friendly cafes in Jakarta. Community-verified WiFi speeds, outlet availability, and noise levels. No framework, no build step.
+co.lok.kan is a Vanilla JS PWA for finding work-friendly cafes in Jakarta. Community-verified WiFi speeds, outlet availability, and noise levels, with a time-aware forecast and a `Go Now` recommendation layer. No framework, no build step.
 
 ## Stack
 
 - Plain HTML + CSS + JS (no bundler, no framework)
-- Google Maps JavaScript API (Places API for live data)
+- Google Maps JavaScript API for rendering only
+- Netlify Functions for public config, reports, and moderation
+- Supabase-ready schema for cafes, reports, and review events
 - Netlify (hosting + headers config)
 - JetBrains Mono + brutalist design system
 
@@ -18,8 +20,8 @@ co.lok.kan is a Vanilla JS PWA for finding work-friendly cafes in Jakarta. Commu
 - DO NOT add a framework (React, Vue, etc.)
 - DO NOT add a bundler/build step
 - DO NOT hardcode new hex color values — use CSS custom properties from `:root` in `global.css`
-- DO NOT modify the `Cafes[]` array seed data unless explicitly asked
-- The Google Maps API key in `index.html` is browser-restricted — don't move it without setting up a backend proxy
+- DO NOT modify the shared seed data in `shared/seed-cafes.js` unless explicitly asked
+- The Google Maps browser key is served through `public-config` and env vars, not hardcoded in `index.html`
 
 ## Design System
 
@@ -39,8 +41,8 @@ App copy is Indonesian-first with personality. Error messages should be cheeky (
 ## How to Test
 
 ```bash
-python3 -m http.server 8080
-# Open http://localhost:8080
+npx netlify dev --port 8888
+# Open http://127.0.0.1:8888/index.html
 ```
 
 See `AGENTS.md` for full project documentation.
