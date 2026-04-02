@@ -4,7 +4,8 @@ exports.handler = async function handler() {
     return json(200, {
         googleMaps: {
             enabled: Boolean(process.env.GOOGLE_MAPS_BROWSER_KEY),
-            browserKey: process.env.GOOGLE_MAPS_BROWSER_KEY || ''
+            browserKey: process.env.GOOGLE_MAPS_BROWSER_KEY || '',
+            mapId: process.env.GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID'
         }
     });
 };

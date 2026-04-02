@@ -253,6 +253,7 @@ let googleMap = null;
 let googleMarkers = [];
 let googleMapsLoadPromise = null;
 let googleMapsAuthFailed = false;
+let googleAdvancedMarkerClass = null;
 let activeFilters = {
     wifi: false,
     plugs: false,
@@ -496,35 +497,39 @@ async function getPublicConfig() {
 }
 
 function clearGoogleMarkers() {
-    googleMarkers.forEach((marker) => marker.setMap(null));
+    googleMarkers.forEach((marker) => {
+        marker.map = null;
+    });
     googleMarkers = [];
 }
 
 function renderGoogleMarkers(cafes) {
-    if (!googleMap || !window.google?.maps) return;
+    if (!googleMap || !window.google?.maps || !googleAdvancedMarkerClass) return;
 
     clearGoogleMarkers();
     if (!cafes.length) return;
 
     const bounds = new window.google.maps.LatLngBounds();
     cafes.forEach((cafe) => {
-        const marker = new window.google.maps.Marker({
+        const pin = document.createElement('div');
+        pin.style.width = cafe.id === bestMatchCafe?.id ? '18px' : '14px';
+        pin.style.height = cafe.id === bestMatchCafe?.id ? '18px' : '14px';
+        pin.style.borderRadius = '999px';
+        pin.style.background = cafe.id === bestMatchCafe?.id ? '#FAD80D' : '#6FC2FF';
+        pin.style.border = '2px solid #383838';
+        pin.style.boxShadow = '2px 2px 0 #383838';
+        pin.title = cafe.name;
+
+        const marker = new googleAdvancedMarkerClass({
             position: { lat: Number(cafe.lat), lng: Number(cafe.lng) },
             map: googleMap,
             title: cafe.name,
-            icon: {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                fillColor: cafe.id === bestMatchCafe?.id ? '#FAD80D' : '#6FC2FF',
-                fillOpacity: 1,
-                strokeColor: '#383838',
-                strokeWeight: 2,
-                scale: cafe.id === bestMatchCafe?.id ? 9 : 7
-            }
+            content: pin
         });
 
-        marker.addListener('click', () => showDetail(cafe.id));
+        marker.addEventListener('gmp-click', () => showDetail(cafe.id));
         googleMarkers.push(marker);
-        bounds.extend(marker.getPosition());
+        bounds.extend(marker.position);
     });
 
     googleMap.fitBounds(bounds, 48);
@@ -535,18 +540,16 @@ function ensureGoogleMapInstance() {
     if (!mapNode || !window.google?.maps) return null;
 
     if (!googleMap) {
+        const mapId = (publicConfig && publicConfig.googleMaps && publicConfig.googleMaps.mapId) || 'DEMO_MAP_ID';
         googleMap = new window.google.maps.Map(mapNode, {
             center: { lat: -6.2088, lng: 106.8456 },
             zoom: 12,
+            mapId,
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: false,
             clickableIcons: false,
-            gestureHandling: 'cooperative',
-            styles: [
-                { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-                { featureType: 'transit', stylers: [{ visibility: 'off' }] }
-            ]
+            gestureHandling: 'cooperative'
         });
     }
 
@@ -564,6 +567,7 @@ async function ensureGoogleMapsReady() {
     }
 
     if (window.google?.maps) {
+        googleAdvancedMarkerClass = window.google.maps.marker?.AdvancedMarkerElement || googleAdvancedMarkerClass;
         ensureGoogleMapInstance();
         return true;
     }
@@ -607,6 +611,8 @@ async function ensureGoogleMapsReady() {
         if (googleMapsAuthFailed) {
             return false;
         }
+        const markerLib = await window.google.maps.importLibrary('marker');
+        googleAdvancedMarkerClass = markerLib.AdvancedMarkerElement;
         ensureGoogleMapInstance();
         return true;
     } catch (error) {
