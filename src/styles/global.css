@@ -162,9 +162,22 @@ a:hover {
 
 /* Layout Components */
 .container {
-    max-width: 600px;
+    max-width: 960px;
     margin: 0 auto;
     padding: var(--space-s);
+}
+
+.brand-bar {
+    background: var(--charcoal);
+    color: var(--parchment);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: var(--border-width) solid var(--charcoal);
+    position: sticky;
+    top: 0;
+    z-index: 130;
 }
 
 .tab-content {
@@ -178,6 +191,10 @@ a:hover {
 }
 
 .tab-content--map {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+    gap: 16px;
+    align-items: start;
     height: auto;
     overflow: visible;
     border: none;
@@ -260,8 +277,8 @@ a:hover {
     background: var(--parchment);
     border-bottom: var(--border-width) solid var(--charcoal);
     position: sticky;
-    top: 0;
-    z-index: 100;
+    top: 48px;
+    z-index: 120;
 }
 
 .search-input {
@@ -544,7 +561,7 @@ a:hover {
 .area-grid {
     display: grid;
     gap: 12px;
-    margin-top: 16px;
+    margin-top: 0;
 }
 
 .map-panel {
@@ -552,6 +569,8 @@ a:hover {
     border: var(--border-width) solid var(--charcoal);
     box-shadow: 4px 4px 0px var(--charcoal);
     padding: 0 16px 16px;
+    position: sticky;
+    top: 132px;
 }
 
 .area-card {
@@ -671,6 +690,7 @@ a:hover {
 @media (max-width: 640px) {
     .container {
         padding: 12px;
+        max-width: 600px;
     }
 
     .best-match {
@@ -693,6 +713,14 @@ a:hover {
     .tab-content {
         height: auto;
         min-height: 420px;
+    }
+
+    .tab-content--map {
+        grid-template-columns: 1fr;
+    }
+
+    .map-panel {
+        position: static;
     }
 
     .modal {
